@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Timetable & Event Reminders</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+
+        .header .logo {
+            font-size: 1.8em;
+            font-weight: bold;
+            text-decoration: none;
+            color: white;
+        }
+
+        .header .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .header .nav-link:hover {
+            background-color: #34495e;
+        }
+
+        .container {
+            max-width: 900px; /* Increased max-width for better timetable display */
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            flex-grow: 1;
+            width: calc(100% - 40px); /* Account for body padding if it were present, or ensure it fits */
+            box-sizing: border-box;
+        }
+
+        h1, h2 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        /* Tabs for Timetable/Events */
+        .tab-switcher {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tab-switcher button {
+            padding: 12px 25px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            background-color: #e0e0e0;
+            color: #555;
+            transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-switcher button:hover {
+            background-color: #d0d0d0;
+            transform: translateY(-2px);
+        }
+
+        .tab-switcher button.active {
+            background-color: #3498db;
+            color: white;
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+        }
+
+        .content-section {
+            display: none; /* Hidden by default */
+            transition: all 0.5s ease-in-out;
+            padding-top: 20px;
+        }
+
+        .content-section.active {
+            display: block; /* Shown when active */
+            opacity: 1;
+            max-height: 2000px; /* Arbitrary large value */
+        }
+
+        .loader {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loader.show {
+            display: block;
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .footer {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+            flex-shrink: 0;
+        }
+
+        .footer p {
+            margin: 0;
+            font-size: 0.9em;
+        }
+
+        /* --- Event List Styling (Cards) --- */
+        #currentEventsList, #upcomingEventsList {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            background-color: #fdfdfd;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-top: 20px;
+        }
+
+        .event-card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-left: 5px solid #3498db; /* Default border color */
+        }
+        .event-card.assignment { border-left-color: #ff9800; }
+        .event-card.exam { border-left-color: #f44336; }
+        .event-card.notice { border-left-color: #4caf50; }
+        .event-card.holiday { border-left-color: #9c27b0; }
+
+        .event-card h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 1.3em;
+        }
+
+        .event-card p {
+            margin: 5px 0;
+            font-size: 1em;
+            color: #555;
+        }
+        .event-card .time-left {
+            font-size: 0.9em;
+            color: #007bff; /* Blue for time left */
+            font-weight: bold;
+            margin-top: 10px;
+            text-align: right;
+        }
+        .event-card .time-left.overdue {
+            color: #dc3545; /* Red for overdue */
+        }
+
+
+        .no-events-message {
+            grid-column: 1 / -1; /* Span across all columns */
+            text-align: center;
+            padding: 20px;
+            color: #777;
+            font-style: italic;
+        }
+
+        /* --- Timetable Table Styling (Copied/Adapted from Admin) --- */
+        #timetable-display {
+            margin-bottom: 40px;
+            padding: 20px;
+            background-color: #f7fcfb;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            overflow-x: auto; /* Enable horizontal scrolling on small screens */
+        }
+
+        #timetable-display table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        #timetable-display th,
+        #timetable-display td {
+            border: 1px solid #e0e0e0;
+            padding: 12px 8px;
+            text-align: center;
+            vertical-align: top;
+            min-width: 100px; /* Minimum width for cells on larger screens */
+        }
+
+        #timetable-display th {
+            background-color: #3498db;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            padding: 15px 8px;
+        }
+
+        #timetable-display td {
+            background-color: #ffffff;
+            font-size: 0.9em;
+            color: #555;
+            height: 80px; /* Fixed height for time slots */
+        }
+
+        #timetable-display td:first-child { /* Time column */
+            background-color: #e8f0fe;
+            font-weight: bold;
+            color: #2c3e50;
+            min-width: 90px; /* Keep time column a bit wider on larger screens */
+        }
+
+        .class-cell { /* Styling for individual class blocks within timetable cells */
+            background-color: #e0f2f7; /* Light blue for class cells */
+            border-left: 4px solid #2196f3; /* Blue accent */
+            border-radius: 5px;
+            padding: 8px;
+            margin: 2px; /* Small margin around the class block */
+            height: 100%; /* Fill available space */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            transition: transform 0.1s ease; /* Added transition for hover */
+            cursor: pointer; /* Added cursor pointer */
+        }
+
+        .class-cell:hover { /* Added hover effect */
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .class-cell strong {
+            display: block;
+            font-size: 1em;
+            color: #0d47a1;
+            margin-bottom: 3px;
+        }
+
+        /* Filter styling */
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #e8f0fe;
+            border-radius: 8px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .filters label {
+            font-weight: bold;
+            color: #34495e;
+        }
+
+        .filters select,
+        .filters input[type="text"],
+        .filters input[type="date"] {
+            padding: 8px 10px;
+            border: 1px solid #cce7ff;
+            border-radius: 5px;
+            font-size: 0.95rem;
+            color: #555;
+            background-color: #f8faff;
+            transition: border-color 0.3s ease;
+        }
+
+        .filters select:focus,
+        .filters input[type="text"]:focus,
+        .filters input[type="date"]:focus {
+            border-color: #6daff7;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(109, 175, 247, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+
+        /* --- Tooltip/Popup Styles (Restored) --- */
+        .class-details-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+
+        .class-details-popup-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .class-details-popup {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+            max-width: 400px;
+            width: 90%;
+            text-align: left;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .class-details-popup-overlay.show .class-details-popup {
+            transform: scale(1);
+        }
+
+        .class-details-popup h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .class-details-popup p {
+            margin: 8px 0;
+            color: #555;
+            font-size: 1.05em;
+        }
+
+        .class-details-popup p strong {
+            color: #34495e;
+            display: inline-block;
+            min-width: 80px;
+        }
+
+        .class-details-popup .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #888;
+            background: none;
+            border: none;
+            line-height: 1;
+            padding: 5px;
+            transition: color 0.2s ease;
+        }
+
+        .class-details-popup .close-btn:hover {
+            color: #333;
+        }
+
+    </style>
+</head>
+<body>
+    <header class="header">
+        <a href="index.html" class="logo">Timetable & Events</a>
+        <nav>
+            <a href="admin.html" class="nav-link">Admin Panel</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h1>Class Schedule & Important Events</h1>
+
+        <div class="tab-switcher">
+            <button id="showTimetableBtn" class="active">Timetable</button>
+            <button id="showEventsBtn">Events</button>
+        </div>
+
+        <!-- Timetable Section -->
+        <div id="timetable-section" class="content-section active">
+            <h2>Current Timetable</h2>
+            <div id="timetable-filters" class="filters">
+                <label for="timetableDayFilter">Filter by Day:</label>
+                <select id="timetableDayFilter">
+                    <option value="">All Days</option>
+                    <option value="Monday">Monday</option>
+                    <option value="Tuesday">Tuesday</option>
+                    <option value="Wednesday">Wednesday</option>
+                    <option value="Thursday">Thursday</option>
+                    <option value="Friday">Friday</option>
+                    <option value="Saturday">Saturday</option>
+                    <option value="Sunday">Sunday</option>
+                </select>
+
+                <label for="timetableSubjectFilter">Filter by Subject:</label>
+                <input type="text" id="timetableSubjectFilter" placeholder="Enter subject...">
+
+                <label for="timetableTeacherFilter">Filter by Teacher:</label>
+                <input type="text" id="timetableTeacherFilter" placeholder="Enter teacher...">
+
+                <label for="timetableRoomFilter">Filter by Room:</label>
+                <input type="text" id="timetableRoomFilter" placeholder="Enter room...">
+
+                <!-- Removed Filter by Title for Timetable -->
+            </div>
+            <div id="timetable-display">
+                <p class="no-events-message">Loading timetable...</p>
+            </div>
+            <div id="timetableLoader" class="loader show"></div>
+        </div>
+
+        <!-- Events Section -->
+        <div id="events-section" class="content-section">
+            <h2>Upcoming Events</h2>
+            <div id="event-filters" class="filters">
+                <label for="eventTypeFilter">Filter by Type:</label>
+                <select id="eventTypeFilter">
+                    <option value="">All Types</option>
+                    <option value="Assignment">Assignment</option>
+                    <option value="Exam">Exam</option>
+                    <option value="Notice">Notice</option>
+                    <option value="Holiday">Holiday</option>
+                </select>
+
+                <label for="eventDateFilter">Filter by Date:</label>
+                <input type="date" id="eventDateFilter">
+
+                <label for="eventSubjectFilter">Filter by Subject:</label>
+                <input type="text" id="eventSubjectFilter" placeholder="Enter subject...">
+
+                <label for="eventTitleFilter">Filter by Title:</label>
+                <input type="text" id="eventTitleFilter" placeholder="Enter title...">
+            </div>
+            <div id="currentEventsList">
+                <p class="no-events-message">Loading events...</p>
+            </div>
+            <div id="eventsLoader" class="loader show"></div>
+        </div>
+    </div>
+
+    <!-- Class Details Popup (Restored) -->
+    <div id="classDetailsPopupOverlay" class="class-details-popup-overlay">
+        <div class="class-details-popup">
+            <button class="close-btn">&times;</button>
+            <h3 id="popupSubject"></h3>
+            <p><strong>Teacher:</strong> <span id="popupTeacher"></span></p>
+            <p><strong>Room:</strong> <span id="popupRoom"></span></p>
+            <p><strong>Time:</strong> <span id="popupTime"></span></p>
+            <p id="popupEffectiveUntil" style="font-style: italic; font-size: 0.9em; color: #777;"></p>
+        </div>
+    </div>
+
+
+    <footer class="footer">
+        <p>&copy; 2025 Class Timetable & Event Reminder. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // IMPORTANT: Replace 'YOUR_WEB_APP_URL' with your deployed Google Apps Script URL
+            const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwuKTSaGEuISidFsVQXkq3REpLMaRf0ku00CRLpmBgMsmMjydimoG56ddX0VzF-3LLW4g/exec';
+            // IMPORTANT: This SECRET_KEY MUST match the one in your Google Apps Script (Code.gs)
+            const SECRET_KEY = 'your_secret_key_here'; // <--- CHANGE THIS!
+
+            // Tab elements
+            const showTimetableBtn = document.getElementById('showTimetableBtn');
+            const showEventsBtn = document.getElementById('showEventsBtn');
+            const timetableSection = document.getElementById('timetable-section');
+            const eventsSection = document.getElementById('events-section');
+
+            // Timetable elements
+            const timetableDisplay = document.getElementById('timetable-display');
+            const timetableLoader = document.getElementById('timetableLoader');
+            // Timetable filters
+            const timetableDayFilter = document.getElementById('timetableDayFilter');
+            const timetableSubjectFilter = document.getElementById('timetableSubjectFilter');
+            const timetableTeacherFilter = document.getElementById('timetableTeacherFilter');
+            const timetableRoomFilter = document.getElementById('timetableRoomFilter');
+            // Removed timetableTitleFilter element
+
+            // Event elements
+            const currentEventsList = document.getElementById('currentEventsList');
+            const eventsLoader = document.getElementById('eventsLoader');
+            // Event filters
+            const eventTypeFilter = document.getElementById('eventTypeFilter');
+            const eventDateFilter = document.getElementById('eventDateFilter');
+            const eventSubjectFilter = document.getElementById('eventSubjectFilter');
+            const eventTitleFilter = document.getElementById('eventTitleFilter');
+
+
+            // Class Details Popup elements (Restored)
+            const classDetailsPopupOverlay = document.getElementById('classDetailsPopupOverlay');
+            const popupSubject = document.getElementById('popupSubject');
+            const popupTeacher = document.getElementById('popupTeacher');
+            const popupRoom = document.getElementById('popupRoom');
+            const popupTime = document.getElementById('popupTime');
+            const popupEffectiveUntil = document.getElementById('popupEffectiveUntil');
+            const popupCloseBtn = classDetailsPopupOverlay.querySelector('.close-btn');
+
+
+            let allTimetableData = []; // To store raw timetable data
+            let allEventsData = [];    // To store raw event data
+            let eventCountdownInterval; // Variable to store the interval ID for event countdowns
+
+            // Function to show/hide sections
+            const showSection = (sectionToShow) => {
+                timetableSection.classList.remove('active');
+                eventsSection.classList.remove('active');
+                showTimetableBtn.classList.remove('active');
+                showEventsBtn.classList.remove('active');
+
+                // Clear existing countdown interval if switching away from events
+                if (eventCountdownInterval) {
+                    clearInterval(eventCountdownInterval);
+                    eventCountdownInterval = null;
+                }
+
+                sectionToShow.classList.add('active');
+                if (sectionToShow === timetableSection) {
+                    showTimetableBtn.classList.add('active');
+                    applyTimetableFilters(); // Re-apply filters when showing timetable
+                } else if (sectionToShow === eventsSection) {
+                    showEventsBtn.classList.add('active');
+                    applyEventFilters(); // Re-apply filters when showing events
+                    // Start countdown interval when events section is active
+                    eventCountdownInterval = setInterval(updateEventCountdowns, 1000);
+                }
+            };
+
+            // Generic function to show/hide loader
+            const toggleLoader = (loaderElement, show) => {
+                if (show) {
+                    loaderElement.classList.add('show');
+                } else {
+                    loaderElement.classList.remove('show');
+                }
+            };
+
+            // Helper function to format time strings (e.g., "8:15 AM", "14:30")
+            const formatTime = (timeValue) => {
+                try {
+                    let dateObj;
+
+                    if (timeValue instanceof Date) {
+                        dateObj = timeValue;
+                    } else if (typeof timeValue === 'string') {
+                        // Attempt to parse as a standard time string ("09:00 AM", "14:30")
+                        dateObj = new Date(`2000/01/01 ${timeValue}`);
+
+                        // If direct parsing failed OR it resulted in an 1899 epoch date (common for Sheets' time values),
+                        // AND it looks like an ISO string, try to extract the time part from the ISO string.
+                        if (isNaN(dateObj.getTime()) || (dateObj.getFullYear() < 1970 && String(timeValue).includes('T') && String(timeValue).includes('Z'))) {
+                            const timePartMatch = String(timeValue).match(/T(\d{2}:\d{2}:\d{2})/); // Extract HH:MM:SS
+                            if (timePartMatch && timePartMatch[1]) {
+                                dateObj = new Date(`2000/01/01 ${timePartMatch[1]}`);
+                            } else {
+                                // Fallback: if it's an ISO string but the above didn't work,
+                                // try parsing the original ISO string as a Date object.
+                                dateObj = new Date(timeValue);
+                            }
+                        }
+                    }
+
+                    if (isNaN(dateObj.getTime())) {
+                        console.warn("Frontend formatTime: Could not reliably parse time value, returning original:", timeValue);
+                        return String(timeValue); // Fallback to original string
+                    }
+
+                    // Use toLocaleTimeString for robust, locale-aware time formatting
+                    return dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+
+                } catch (e) {
+                    console.warn("Frontend formatTime: Error during formatting, returning original:", timeValue, e);
+                    return String(timeValue); // Fallback to original string on error
+                }
+            };
+
+            // Function to calculate time left for an event
+            const calculateTimeLeft = (eventDate, eventTime) => {
+                const now = new Date();
+                const eventDateTime = new Date(`${eventDate} ${eventTime}`);
+
+                const diffMs = eventDateTime - now; // Difference in milliseconds
+
+                if (diffMs <= 0) {
+                    return { text: "Event Overdue", overdue: true };
+                }
+
+                const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+
+                let timeLeftString = "";
+                if (days > 0) {
+                    timeLeftString += `${days}d `;
+                }
+                if (hours > 0 || days > 0) { // Show hours if there are days or if it's within the current day
+                    timeLeftString += `${hours}h `;
+                }
+                if (minutes > 0 || hours > 0 || days > 0) { // Show minutes if there are hours/days or if it's within the current hour
+                    timeLeftString += `${minutes}m `;
+                }
+                timeLeftString += `${seconds}s`;
+
+                return { text: timeLeftString.trim(), overdue: false };
+            };
+
+            // Function to update all event countdowns
+            const updateEventCountdowns = () => {
+                document.querySelectorAll('.event-card').forEach(card => {
+                    const eventDate = card.dataset.eventDate;
+                    const eventTime = card.dataset.eventTime;
+                    const timeLeftElement = card.querySelector('.time-left');
+
+                    if (eventDate && eventTime && timeLeftElement) {
+                        const { text, overdue } = calculateTimeLeft(eventDate, eventTime);
+                        timeLeftElement.textContent = `Time Left: ${text}`;
+                        if (overdue) {
+                            timeLeftElement.classList.add('overdue');
+                        } else {
+                            timeLeftElement.classList.remove('overdue');
+                        }
+                    }
+                });
+            };
+
+
+            // Function to fetch all data (timetable and events)
+            const fetchAndRenderData = async () => {
+                toggleLoader(timetableLoader, true);
+                toggleLoader(eventsLoader, true);
+                timetableDisplay.innerHTML = '<p class="no-events-message">Loading timetable...</p>';
+                currentEventsList.innerHTML = '<p class="no-events-message">Loading events...</p>';
+
+                try {
+                    // Fetch Timetable Data
+                    const timetableUrl = new URL(WEB_APP_URL);
+                    timetableUrl.searchParams.append('sheet', 'Timetable');
+                    timetableUrl.searchParams.append('secretKey', SECRET_KEY);
+                    // No token needed for public view
+                    const timetableResponse = await fetch(timetableUrl.toString());
+                    if (!timetableResponse.ok) {
+                        throw new Error(`HTTP error! status: ${timetableResponse.status}`);
+                    }
+                    allTimetableData = await timetableResponse.json();
+                    applyTimetableFilters(); // Apply filters initially
+
+                    // Fetch Events Data
+                    const eventsUrl = new URL(WEB_APP_URL);
+                    eventsUrl.searchParams.append('sheet', 'Events');
+                    eventsUrl.searchParams.append('secretKey', SECRET_KEY);
+                    // No token needed for public view
+                    const eventsResponse = await fetch(eventsUrl.toString());
+                    if (!eventsResponse.ok) {
+                        throw new Error(`HTTP error! status: ${eventsResponse.status}`);
+                    }
+                    allEventsData = await eventsResponse.json();
+                    applyEventFilters(); // Apply filters initially
+
+                } catch (error) {
+                    console.error('Error fetching data:', error);
+                    timetableDisplay.innerHTML = '<p class="no-events-message error">Failed to load timetable. Please check your Apps Script deployment.</p>';
+                    currentEventsList.innerHTML = '<p class="no-events-message error">Failed to load events. Please check your Apps Script deployment.</p>';
+                } finally {
+                    toggleLoader(timetableLoader, false);
+                    toggleLoader(eventsLoader, false);
+                }
+            };
+
+            // Function to apply filters and render timetable
+            const applyTimetableFilters = () => {
+                let filteredTimetable = [...allTimetableData];
+
+                const day = timetableDayFilter.value;
+                const subject = timetableSubjectFilter.value.toLowerCase().trim();
+                const teacher = timetableTeacherFilter.value.toLowerCase().trim();
+                const room = timetableRoomFilter.value.toLowerCase().trim();
+                // Removed title filter variable
+
+                if (day) {
+                    filteredTimetable = filteredTimetable.filter(entry => entry.Day === day);
+                }
+                if (subject) {
+                    filteredTimetable = filteredTimetable.filter(entry => entry.Subject && entry.Subject.toLowerCase().includes(subject));
+                }
+                if (teacher) {
+                    filteredTimetable = filteredTimetable.filter(entry => entry.Teacher && entry.Teacher.toLowerCase().includes(teacher));
+                }
+                if (room) {
+                    filteredTimetable = filteredTimetable.filter(entry => entry.Room && entry.Room.toLowerCase().includes(room));
+                }
+                // Removed title filtering logic
+
+                renderTimetable(filteredTimetable);
+            };
+
+            // Function to render timetable (Table structure)
+            const renderTimetable = (timetableToRender) => {
+                timetableDisplay.innerHTML = ''; // Clear previous content
+
+                if (timetableToRender.length === 0) {
+                    timetableDisplay.innerHTML = '<p class="no-events-message">No timetable entries found matching your criteria.</p>';
+                    return;
+                }
+
+                const dayOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+                const uniqueTimeSlots = new Set();
+                const classesByTimeAndDay = {}; // Structure: { "HH:MM": { "Day": [class1, class2], ... }, ... }
+
+                // Filter out entries past their EffectiveUntilDate
+                const today = new Date();
+                today.setHours(0, 0, 0, 0); // Normalize today's date to start of day for comparison
+
+                const activeTimetableEntries = timetableToRender.filter(item => {
+                    if (item.EffectiveUntilDate) {
+                        const effectiveDate = new Date(item.EffectiveUntilDate);
+                        effectiveDate.setHours(0, 0, 0, 0); // Normalize effective date to start of day
+                        return effectiveDate >= today; // Only include if effective date is today or in the future
+                    }
+                    return true; // If no EffectiveUntilDate, it's a permanent entry, so include it
+                });
+
+
+                activeTimetableEntries.forEach(item => {
+                    if (item.StartTime) {
+                        const formattedStartTime = formatTime(item.StartTime);
+                        uniqueTimeSlots.add(formattedStartTime);
+                    }
+                    if (item.StartTime && item.Day && dayOrder.includes(item.Day)) {
+                        const formattedStartTime = formatTime(item.StartTime);
+                        if (!classesByTimeAndDay[formattedStartTime]) {
+                            classesByTimeAndDay[formattedStartTime] = {};
+                        }
+                        if (!classesByTimeAndDay[formattedStartTime][item.Day]) {
+                            classesByTimeAndDay[formattedStartTime][item.Day] = [];
+                        }
+                        classesByTimeAndDay[formattedStartTime][item.Day].push(item);
+                    }
+                });
+
+                const sortedTimeSlots = Array.from(uniqueTimeSlots).sort((a, b) => {
+                    const timeA = new Date(`2000/01/01 ${a}`);
+                    const timeB = new Date(`2000/01/01 ${b}`);
+                    return timeA - timeB;
+                });
+
+                const table = document.createElement('table');
+                const thead = document.createElement('thead');
+                const tbody = document.createElement('tbody');
+
+                const headerRow = document.createElement('tr');
+                headerRow.innerHTML = '<th>Time</th>';
+                dayOrder.forEach(day => {
+                    headerRow.innerHTML += `<th>${day}</th>`;
+                });
+                thead.appendChild(headerRow);
+                table.appendChild(thead);
+
+                sortedTimeSlots.forEach(timeSlot => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td>${timeSlot}</td>`;
+
+                    dayOrder.forEach(day => {
+                        const cell = document.createElement('td');
+                        const classesInSlot = classesByTimeAndDay[timeSlot] && classesByTimeAndDay[timeSlot][day] ? classesByTimeAndDay[timeSlot][day] : [];
+
+                        if (classesInSlot.length > 0) {
+                            classesInSlot.forEach(classItem => {
+                                const classDiv = document.createElement('div');
+                                classDiv.className = 'class-cell';
+                                // Store data attributes for popup
+                                classDiv.dataset.subject = classItem.Subject;
+                                classDiv.dataset.teacher = classItem.Teacher;
+                                classDiv.dataset.room = classItem.Room;
+                                classDiv.dataset.startTime = formatTime(classItem.StartTime);
+                                classDiv.dataset.endTime = formatTime(classItem.EndTime);
+                                classDiv.dataset.effectiveUntilDate = classItem.EffectiveUntilDate || ''; // Store new field
+
+                                // Only display subject name by default
+                                classDiv.innerHTML = `<strong>${classItem.Subject || 'N/A'}</strong>`;
+                                cell.appendChild(classDiv);
+                            });
+                        } else {
+                            cell.innerHTML = '';
+                        }
+                        row.appendChild(cell);
+                    });
+                    tbody.appendChild(row);
+                });
+                table.appendChild(tbody);
+                timetableDisplay.appendChild(table);
+
+                if (activeTimetableEntries.length === 0 && timetableToRender.length > 0) {
+                    timetableDisplay.innerHTML = '<p class="no-events-message">All timetable entries have expired or are not effective yet.</p>';
+                } else if (activeTimetableEntries.length === 0) {
+                    timetableDisplay.innerHTML = '<p class="no-events-message">No timetable entries found matching your criteria.</p>';
+                }
+            };
+
+
+            // Function to apply filters and render events
+            const applyEventFilters = () => {
+                let filteredEvents = [...allEventsData];
+
+                const type = eventTypeFilter.value.toLowerCase();
+                const date = eventDateFilter.value;
+                const subject = eventSubjectFilter.value.toLowerCase().trim();
+                const title = eventTitleFilter.value.toLowerCase().trim();
+
+                if (type) {
+                    filteredEvents = filteredEvents.filter(event => event.Type && event.Type.toLowerCase() === type);
+                }
+                if (date) {
+                    filteredEvents = filteredEvents.filter(event => event.Date === date);
+                }
+                if (subject) {
+                    filteredEvents = filteredEvents.filter(event => event.Subject && event.Subject.toLowerCase().includes(subject));
+                }
+                if (title) {
+                    filteredEvents = filteredEvents.filter(event => event.Title && event.Title.toLowerCase().includes(title));
+                }
+
+                renderEvents(filteredEvents);
+            };
+
+            // Function to render events (Card structure)
+            const renderEvents = (eventsToRender) => {
+                currentEventsList.innerHTML = ''; // Clear previous content
+
+                if (eventsToRender.length === 0) {
+                    currentEventsList.innerHTML = '<p class="no-events-message">No events found matching your criteria.</p>';
+                    return;
+                }
+
+                // Sort events by date and time
+                eventsToRender.sort((a, b) => {
+                    const dateTimeA = new Date(`${a.Date} ${a.Time}`);
+                    const dateTimeB = new Date(`${b.Date} ${b.Time}`);
+                    return dateTimeA - dateTimeB;
+                });
+
+                eventsToRender.forEach(event => {
+                    const card = document.createElement('div');
+                    card.className = `event-card ${event.Type ? event.Type.toLowerCase().replace(/\s/g, '-') : ''}`;
+                    // Store event date and time for countdown
+                    card.dataset.eventDate = event.Date;
+                    card.dataset.eventTime = event.Time;
+
+
+                    const formattedDate = event.Date ? new Date(event.Date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A';
+                    const formattedTime = event.Time || 'N/A';
+
+                    card.innerHTML = `
+                        <p><strong>Type:</strong> ${event.Type || 'N/A'}</p>
+                        <h3>${event.Title || 'No Title'}</h3>
+                        <p><strong>Subject:</strong> ${event.Subject || 'N/A'}</p>
+                        <p><strong>Date:</strong> ${formattedDate}</p>
+                        <p><strong>Time:</strong> ${formattedTime}</p>
+                        <p><strong>Details:</strong> ${event.Details || 'N/A'}</p>
+                        <p class="time-left"></p> <!-- Placeholder for time left -->
+                    `;
+                    currentEventsList.appendChild(card);
+                });
+
+                // Initial update of countdowns
+                updateEventCountdowns();
+            };
+
+            // Event Listeners for Tab Switching
+            showTimetableBtn.addEventListener('click', () => showSection(timetableSection));
+            showEventsBtn.addEventListener('click', () => showSection(eventsSection));
+
+            // Event Listeners for Timetable Filters
+            timetableDayFilter.addEventListener('change', applyTimetableFilters);
+            timetableSubjectFilter.addEventListener('input', applyTimetableFilters);
+            timetableTeacherFilter.addEventListener('input', applyTimetableFilters);
+            timetableRoomFilter.addEventListener('input', applyTimetableFilters);
+            // Removed timetableTitleFilter event listener
+
+            // Event Listeners for Event Filters
+            eventTypeFilter.addEventListener('change', applyEventFilters);
+            eventDateFilter.addEventListener('change', applyEventFilters);
+            eventSubjectFilter.addEventListener('input', applyEventFilters);
+            eventTitleFilter.addEventListener('input', applyEventFilters);
+
+            // Event listener for showing class details popup using event delegation (Restored)
+            timetableDisplay.addEventListener('click', (event) => {
+                const classCell = event.target.closest('.class-cell');
+                if (classCell) {
+                    popupSubject.textContent = classCell.dataset.subject;
+                    popupTeacher.textContent = classCell.dataset.teacher;
+                    popupRoom.textContent = classCell.dataset.room;
+                    popupTime.textContent = `${classCell.dataset.startTime} - ${classCell.dataset.endTime}`;
+
+                    if (classCell.dataset.effectiveUntilDate && classCell.dataset.effectiveUntilDate !== 'N/A') {
+                        const formattedEffectiveDate = new Date(classCell.dataset.effectiveUntilDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                        popupEffectiveUntil.textContent = `Effective Until: ${formattedEffectiveDate}`;
+                        popupEffectiveUntil.style.display = 'block';
+                    } else {
+                        popupEffectiveUntil.textContent = '';
+                        popupEffectiveUntil.style.display = 'none';
+                    }
+
+                    classDetailsPopupOverlay.classList.add('show');
+                }
+            });
+
+            // Event listener for closing class details popup (Restored)
+            popupCloseBtn.addEventListener('click', () => {
+                classDetailsPopupOverlay.classList.remove('show');
+            });
+
+            // Close popup when clicking outside it (Restored)
+            classDetailsPopupOverlay.addEventListener('click', (event) => {
+                if (event.target === classDetailsPopupOverlay) {
+                    classDetailsPopupOverlay.classList.remove('show');
+                }
+            });
+
+
+            // Initial data fetch and render on page load
+            fetchAndRenderData();
+
+            // Clear interval when the user navigates away or closes the tab
+            window.addEventListener('beforeunload', () => {
+                if (eventCountdownInterval) {
+                    clearInterval(eventCountdownInterval);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
