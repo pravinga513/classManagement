@@ -108,7 +108,7 @@
         .form-section.hidden {
             display: none;
             opacity: 0;
-            max-height: 0;
+            height: 0;
             overflow: hidden;
             padding-top: 0;
         }
@@ -116,7 +116,8 @@
         .form-section.visible {
             display: block;
             opacity: 1;
-            max-height: 2000px; /* Arbitrary large value to allow content to show */
+            /* Removed max-height to allow natural growth */
+            height: auto; /* Ensure it takes necessary height */
         }
 
         .admin-form {
@@ -351,6 +352,7 @@
             border: 1px solid #e0e0e0;
             padding: 12px 8px;
             text-align: center;
+            vertical-align: top;
             min-width: 100px; /* Minimum width for cells on larger screens */
         }
 
@@ -923,7 +925,7 @@
 
 
     <footer class="footer">
-        <p>&copy; 2025 Pravinga513. All rights reserved.</p>
+        <p>&copy; 2025 Class Timetable & Event Reminder. All rights reserved.</p>
     </footer>
 
     <script>
