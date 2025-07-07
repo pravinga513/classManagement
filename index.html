@@ -21,7 +21,8 @@
                     disable: true // Disable default welcome notification
                 },
                 autoResubscribe: true, // Automatically resubscribe users if their subscription is lost
-                path: "/classManagement/" // IMPORTANT: This tells OneSignal the subdirectory where your service worker is located
+                path: "/classManagement/", // IMPORTANT: This tells OneSignal the subdirectory where your service worker is located
+                scope: "/classManagement/" // NEW: Explicitly set the service worker scope
             });
 
             // Prompt user for notification permission if not already granted or denied
