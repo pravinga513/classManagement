@@ -27,6 +27,7 @@
             // Prompt user for notification permission if not already granted or denied
             // OneSignal's SDK will handle showing the slidedown prompt based on its internal logic
             // and the 'notifyButton' setting.
+            // This explicit call is for the custom button, to ensure it triggers the prompt.
             OneSignal.isPushNotificationsEnabled(function(isEnabled) {
                 if (!isEnabled) {
                     // Show a soft prompt for permission. This is generally better UX than a direct browser prompt.
@@ -365,6 +366,31 @@
             box-shadow: 0 0 0 3px rgba(109, 175, 247, 0.2);
         }
 
+        /* Custom Subscribe Button Styling */
+        .subscribe-btn-container {
+            text-align: center;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+
+        .subscribe-btn {
+            background-color: #28a745; /* Green color for subscribe */
+            color: white;
+            padding: 12px 25px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+        }
+
+        .subscribe-btn:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(40, 167, 69, 0.4);
+        }
+
         /* --- Tooltip/Popup Styles (Restored) --- */
         .class-details-popup-overlay {
             position: fixed;
@@ -537,6 +563,11 @@
             <button id="showEventsBtn">Events</button>
         </div>
 
+        <!-- Subscribe Button Container -->
+        <div class="subscribe-btn-container">
+            <button id="subscribeButton" class="subscribe-btn">Subscribe to Notifications</button>
+        </div>
+
         <!-- Timetable Section -->
         <div id="timetable-section" class="content-section active">
             <h2>Current Timetable</h2>
@@ -619,7 +650,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // IMPORTANT: Replace 'YOUR_WEB_APP_URL' with your deployed Google Apps Script URL
-            const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxKoqYTrOL8usd76Ztr4wUyTyEtfzrKUnMnRM2GEKWDtZPxXdquIzGW3AxmT6Kz09hmWQ/exec';
+            const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzaIinzXvleIgLOAL6-ojqiwSijrfv_lxSYAMoBnYuu9r0c5AgjHw7QdHRKJaB9p1JWQQ/exec';
             // IMPORTANT: This SECRET_KEY MUST match the one in your Google Apps Script (Code.gs)
             const SECRET_KEY = 'your_secret_key_here'; // <--- CHANGE THIS!
 
@@ -646,6 +677,9 @@
             const eventDateFilter = document.getElementById('eventDateFilter');
             const eventSubjectFilter = document.getElementById('eventSubjectFilter');
             const eventTitleFilter = document.getElementById('eventTitleFilter');
+
+            // Custom Subscribe Button
+            const subscribeButton = document.getElementById('subscribeButton');
 
 
             // Class Details Popup elements (Restored)
@@ -797,7 +831,7 @@
                 toggleLoader(timetableLoader, true);
                 toggleLoader(eventsLoader, true);
                 timetableDisplay.innerHTML = '<p class="no-events-message">Loading timetable...</p>';
-                currentEventsList.innerHTML = '<p class="no-events-message">Loading events 자체가.</p>';
+                currentEventsList.innerHTML = '<p class="no-events-message">Loading events...</p>';
 
                 try {
                     // Fetch Timetable Data
@@ -1112,6 +1146,22 @@
             eventDateFilter.addEventListener('change', applyEventFilters);
             eventSubjectFilter.addEventListener('input', applyEventFilters);
             eventTitleFilter.addEventListener('input', applyEventFilters);
+
+            // Event listener for custom subscribe button
+            subscribeButton.addEventListener('click', () => {
+                OneSignalDeferred.push(async function(OneSignal) {
+                    const permission = await OneSignal.getNotificationPermission();
+                    if (permission === 'default') {
+                        OneSignal.showSlidedownPrompt();
+                    } else if (permission === 'denied') {
+                        // User has previously denied, guide them to browser settings
+                        alert("Please enable notifications for this site in your browser settings.");
+                    } else { // 'granted'
+                        alert("You are already subscribed to notifications!");
+                    }
+                });
+            });
+
 
             // Event listener for showing class details popup using event delegation (Restored)
             timetableDisplay.addEventListener('click', (event) => {
