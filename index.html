@@ -21,6 +21,7 @@
                     disable: true // Disable default welcome notification
                 },
                 autoResubscribe: true, // Automatically resubscribe users if their subscription is lost
+                path: "/classManagement/" // IMPORTANT: This tells OneSignal the subdirectory where your service worker is located
             });
 
             // Prompt user for notification permission if not already granted or denied
@@ -618,7 +619,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // IMPORTANT: Replace 'YOUR_WEB_APP_URL' with your deployed Google Apps Script URL
-            const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzaIinzXvleIgLOAL6-ojqiwSijrfv_lxSYAMoBnYuu9r0c5AgjHw7QdHRKJaB9p1JWQQ/exec';
+            const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxKoqYTrOL8usd76Ztr4wUyTyEtfzrKUnMnRM2GEKWDtZPxXdquIzGW3AxmT6Kz09hmWQ/exec';
             // IMPORTANT: This SECRET_KEY MUST match the one in your Google Apps Script (Code.gs)
             const SECRET_KEY = 'your_secret_key_here'; // <--- CHANGE THIS!
 
@@ -796,7 +797,7 @@
                 toggleLoader(timetableLoader, true);
                 toggleLoader(eventsLoader, true);
                 timetableDisplay.innerHTML = '<p class="no-events-message">Loading timetable...</p>';
-                currentEventsList.innerHTML = '<p class="no-events-message">Loading events...</p>';
+                currentEventsList.innerHTML = '<p class="no-events-message">Loading events 자체가.</p>';
 
                 try {
                     // Fetch Timetable Data
