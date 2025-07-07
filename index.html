@@ -625,6 +625,9 @@
             <label for="eventSubject">Filter by Subject:</label>
             <input type="text" id="eventSubject" placeholder="Enter subject...">
 
+            <label for="eventTitleFilter">Filter by Title:</label>
+            <input type="text" id="eventTitleFilter" placeholder="Enter title...">
+
             <label for="eventDate">Filter by Date:</label>
             <input type="date" id="eventDate">
         </div>
@@ -676,6 +679,7 @@
             const eventsList = document.getElementById('events-list');
             const eventTypeFilter = document.getElementById('eventType');
             const eventSubjectFilter = document.getElementById('eventSubject');
+            const eventTitleFilter = document.getElementById('eventTitleFilter'); // New filter element
             const eventDateFilter = document.getElementById('eventDate');
 
             const classDetailsPopupOverlay = document.getElementById('classDetailsPopupOverlay');
@@ -994,6 +998,7 @@
 
                 const type = eventTypeFilter.value.toLowerCase();
                 const subject = eventSubjectFilter.value.toLowerCase().trim();
+                const title = eventTitleFilter.value.toLowerCase().trim(); // Get title filter value
                 const date = eventDateFilter.value;
 
                 if (type) {
@@ -1001,7 +1006,11 @@
                 }
 
                 if (subject) {
-                    filteredEvents = filteredEvents.filter(event => event.Subject.toLowerCase().includes(subject));
+                    filteredEvents = filteredEvents.filter(event => event.Subject && event.Subject.toLowerCase().includes(subject));
+                }
+
+                if (title) { // Apply title filter
+                    filteredEvents = filteredEvents.filter(event => event.Title && event.Title.toLowerCase().includes(title));
                 }
 
                 if (date) {
@@ -1014,6 +1023,7 @@
             // Add event listeners for filters
             eventTypeFilter.addEventListener('change', applyFilters);
             eventSubjectFilter.addEventListener('input', applyFilters);
+            eventTitleFilter.addEventListener('input', applyFilters); // New event listener for title filter
             eventDateFilter.addEventListener('change', applyFilters);
 
             // Add event listeners for view switcher buttons
