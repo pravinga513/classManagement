@@ -195,7 +195,6 @@
         .content-section.visible {
             display: block;
             opacity: 1;
-            /* Removed max-height to allow natural growth */
             height: auto; /* Ensure it takes necessary height */
         }
 
@@ -962,8 +961,8 @@
                     card.className = `event-card ${event.Type.toLowerCase().replace(/\s/g, '-')}`;
                     card.id = `event-${event.ID}`; // Set ID for deep linking
 
-                    const formattedDate = new Date(event.Date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-                    const formattedTime = event.Time;
+                    const formattedDate = event.Date ? new Date(event.Date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A';
+                    const formattedTime = event.Time || 'N/A';
 
                     card.innerHTML = `
                         <p class="type">${event.Type}</p>
@@ -1085,6 +1084,29 @@
                     }
                 }
             };
+
+            // OneSignal Initialization
+            window.OneSignal = window.OneSignal || [];
+            OneSignal.push(function() {
+                OneSignal.init({
+                    appId: "50801439-7868-4cae-a262-018829ad2bc1", // Your actual OneSignal App ID
+                    // Add other config here if you have it, like safari_web_id
+                    autoResubscribe: true, // Recommended to automatically re-subscribe users
+                    persistNotification: false, // Optional: Notifications disappear after click
+                    // serviceWorkerPath: '/OneSignalSDKWorker.js' // Only if you put it in root
+                });
+
+                // Explicitly show the OneSignal slidedown prompt to encourage subscription
+                OneSignal.showSlidedownPrompt();
+
+                OneSignal.isPushNotificationsEnabled(function(isEnabled) {
+                    if (isEnabled) {
+                        console.log("Push notifications are enabled!");
+                    } else {
+                        console.log("Push notifications are NOT enabled. Prompting for subscription...");
+                    }
+                });
+            });
 
 
             // Initial data fetch and rendering on page load
