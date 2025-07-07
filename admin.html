@@ -253,10 +253,29 @@
                 width: calc(100% - 30px);
             }
             .admin-form {
-                padding: 20px;
+                padding: 15px; /* Reduced padding for forms on mobile */
+                gap: 10px; /* Slightly reduced gap for form elements */
             }
             .admin-view-switcher button {
                 flex: 1 1 auto; /* Allow buttons to grow and wrap */
+            }
+            /* Adjust padding for modals on smaller screens */
+            .edit-modal, .view-timetable-details-popup {
+                padding: 20px; /* Reduced padding for modals */
+                max-height: 90vh; /* Limit height to 90% of viewport height */
+                overflow-y: auto; /* Enable vertical scrolling */
+            }
+            .edit-modal form input,
+            .edit-modal form select,
+            .edit-modal form textarea,
+            .view-timetable-details-popup p span {
+                padding: 8px; /* Slightly smaller input padding within modals */
+                font-size: 0.95em; /* Adjust font size for better fit */
+            }
+            .edit-modal form button,
+            .view-timetable-details-popup .actions button {
+                padding: 8px 12px; /* Smaller button padding in modals */
+                font-size: 0.9em; /* Smaller font size for buttons in modals */
             }
         }
 
@@ -440,6 +459,8 @@
             text-align: left;
             transform: scale(0.9);
             transition: transform 0.3s ease;
+            max-height: 90vh; /* Apply max-height here */
+            overflow-y: auto; /* Enable scrolling */
         }
 
         .edit-modal-overlay.show .edit-modal {
@@ -549,6 +570,8 @@
             text-align: left;
             transform: scale(0.9);
             transition: transform 0.3s ease;
+            max-height: 90vh; /* Apply max-height here */
+            overflow-y: auto; /* Enable scrolling */
         }
 
         .view-timetable-details-popup-overlay.show .view-timetable-details-popup {
