@@ -4,13 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Class Timetable & Event Reminders</title>
+    <!-- Link to manifest.json for PWA features and icons -->
+    <link rel="manifest" href="/classManagement/manifest.json">
     <!-- OneSignal SDK -->
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script>
-        window.OneSignal = window.OneSignal || [];
-        OneSignal.push(function() {
-            OneSignal.init({
-                appId: "50801439-7868-4cae-a262-018829ad2bc1", // <<< IMPORTANT: Replace with your actual OneSignal App ID
+        window.OneSignalDeferred = window.OneSignalDeferred || [];
+        OneSignalDeferred.push(async function(OneSignal) {
+            await OneSignal.init({
+                appId: "50801439-7868-4cae-a262-018829ad2bc1", // Your OneSignal App ID
                 safari_web_id: "YOUR_SAFARI_WEB_ID", // Optional: If you plan to support Safari Web Push
                 notifyButton: {
                     enable: true, // Show the default OneSignal bell icon (optional)
@@ -22,13 +24,13 @@
             });
 
             // Prompt user for notification permission if not already granted or denied
-            OneSignal.push(function() {
-                OneSignal.isPushNotificationsEnabled(function(isEnabled) {
-                    if (!isEnabled) {
-                        // Show a soft prompt for permission. This is generally better UX than a direct browser prompt.
-                        OneSignal.showSlidedownPrompt();
-                    }
-                });
+            // OneSignal's SDK will handle showing the slidedown prompt based on its internal logic
+            // and the 'notifyButton' setting.
+            OneSignal.isPushNotificationsEnabled(function(isEnabled) {
+                if (!isEnabled) {
+                    // Show a soft prompt for permission. This is generally better UX than a direct browser prompt.
+                    OneSignal.showSlidedownPrompt();
+                }
             });
         });
     </script>
@@ -488,7 +490,6 @@
 
             #timetable-display th,
             #timetable-display td {
-                border: 1px solid #e0e0e0;
                 padding: 6px 4px; /* Reduced padding for cells */
                 font-size: 0.7em; /* Smaller font size for all cells */
                 white-space: normal; /* Allow text to wrap */
