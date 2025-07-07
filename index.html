@@ -3,54 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Class Timetable & Event Reminders</title>
-    <!-- Link to manifest.json for PWA features and icons -->
-    <link rel="manifest" href="/classManagement/manifest.json">
-    <!-- OneSignal SDK -->
-    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-    <script>
-        window.OneSignalDeferred = window.OneSignalDeferred || [];
-        OneSignalDeferred.push(async function(OneSignal) {
-            await OneSignal.init({
-                appId: "50801439-7868-4cae-a262-018829ad2bc1", // Your OneSignal App ID
-                safari_web_id: "YOUR_SAFARI_WEB_ID", // Optional: If you plan to support Safari Web Push
-                notifyButton: {
-                    enable: true, // Show the default OneSignal bell icon (optional)
-                },
-                welcomeNotification: {
-                    disable: true // Disable default welcome notification
-                },
-                autoResubscribe: true, // Automatically resubscribe users if their subscription is lost
-                path: "/classManagement/", // IMPORTANT: This tells OneSignal the subdirectory where your service worker is located
-                scope: "/classManagement/" // NEW: Explicitly set the service worker scope
-            });
-
-            // Prompt user for notification permission if not already granted or denied
-            // OneSignal's SDK will handle showing the slidedown prompt based on its internal logic
-            // and the 'notifyButton' setting.
-            // This explicit call is for the custom button, to ensure it triggers the prompt.
-            OneSignal.isPushNotificationsEnabled(function(isEnabled) {
-                if (!isEnabled) {
-                    // Show a soft prompt for permission. This is generally better UX than a direct browser prompt.
-                    OneSignal.showSlidedownPrompt();
-                }
-            });
-        });
-    </script>
+    <title>Class Timetable & Event Reminder</title>
     <style>
+        /* --- style.css content starts here --- */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            padding: 0;
+            padding: 0; /* Remove default body padding to allow header/footer to span full width */
             background-color: #f4f7f6;
             color: #333;
             line-height: 1.6;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            overflow-x: hidden; /* Prevent horizontal scroll from layout issues, but allow on specific elements */
+            display: flex; /* Use flexbox for overall layout */
+            flex-direction: column; /* Stack header, main content, footer vertically */
+            min-height: 100vh; /* Ensure body takes at least full viewport height */
         }
 
+        /* Header Styles */
         .header {
             background-color: #2c3e50;
             color: white;
@@ -83,8 +51,8 @@
         }
 
         .container {
-            max-width: 900px; /* Increased max-width for better timetable display */
-            margin: 20px auto;
+            max-width: 1200px;
+            margin: 0 auto; /* Center the main content area */
             background-color: #fff;
             padding: 30px;
             border-radius: 8px;
@@ -100,16 +68,15 @@
             margin-bottom: 25px;
         }
 
-        /* Tabs for Timetable/Events */
-        .tab-switcher {
+        /* View Switcher */
+        .view-switcher {
             display: flex;
             justify-content: center;
             margin-bottom: 30px;
             gap: 10px;
-            flex-wrap: wrap;
         }
 
-        .tab-switcher button {
+        .view-switcher button {
             padding: 12px 25px;
             font-size: 1.1em;
             border: none;
@@ -121,226 +88,49 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
-        .tab-switcher button:hover {
+        .view-switcher button:hover {
             background-color: #d0d0d0;
             transform: translateY(-2px);
         }
 
-        .tab-switcher button.active {
+        .view-switcher button.active {
             background-color: #3498db;
             color: white;
             box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
         }
 
-        .content-section {
-            display: none; /* Hidden by default */
-            transition: all 0.5s ease-in-out;
-            padding-top: 20px;
-        }
-
-        .content-section.active {
-            display: block; /* Shown when active */
-            opacity: 1;
-            max-height: 2000px; /* Arbitrary large value */
-        }
-
-        .loader {
-            border: 8px solid #f3f3f3;
-            border-top: 8px solid #3498db;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 2s linear infinite;
-            margin: 20px auto;
-            display: none;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .loader.show {
-            display: block;
-        }
-
-        .message {
-            margin-top: 20px;
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
-            font-weight: bold;
-            display: none;
-        }
-
-        .message.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .footer {
-            background-color: #2c3e50;
-            color: white;
-            text-align: center;
-            padding: 20px;
-            margin-top: 40px;
-            flex-shrink: 0;
-        }
-
-        .footer p {
-            margin: 0;
-            font-size: 0.9em;
-        }
-
-        /* --- Event List Styling (Cards) --- */
-        #currentEventsList, #upcomingEventsList {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            padding: 20px;
-            background-color: #fdfdfd;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            margin-top: 20px;
-        }
-
-        .event-card {
-            background-color: #ffffff;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            border-left: 5px solid #3498db; /* Default border color */
-        }
-        .event-card.assignment { border-left-color: #ff9800; }
-        .event-card.exam { border-left-color: #f44336; }
-        .event-card.notice { border-left-color: #4caf50; }
-        .event-card.holiday { border-left-color: #9c27b0; }
-
-        .event-card h3 {
-            margin-top: 0;
-            margin-bottom: 10px;
-            color: #333;
-            font-size: 1.3em;
-        }
-
-        .event-card p {
-            margin: 5px 0;
-            font-size: 1em;
-            color: #555;
-        }
-        .event-card .time-left {
-            font-size: 0.9em;
-            color: #007bff; /* Blue for time left */
-            font-weight: bold;
-            margin-top: 10px;
-            text-align: right;
-        }
-        .event-card .time-left.overdue {
-            color: #dc3545; /* Red for overdue */
-        }
-
-        /* Removed .remind-me-btn styling as the button is removed */
-
-        .no-events-message {
-            grid-column: 1 / -1; /* Span across all columns */
-            text-align: center;
-            padding: 20px;
-            color: #777;
-            font-style: italic;
-        }
-
-        /* --- Timetable Table Styling --- */
-        #timetable-display {
-            margin-bottom: 40px;
-            padding: 20px;
-            background-color: #f7fcfb;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            overflow-x: auto; /* Enable horizontal scrolling if content overflows */
-        }
-
-        #timetable-display table {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: fixed; /* Helps in distributing column widths */
-        }
-
-        #timetable-display th,
-        #timetable-display td {
-            border: 1px solid #e0e0e0;
-            padding: 12px 8px;
-            text-align: center;
-            vertical-align: top;
-            word-break: break-word; /* Break long words to fit in cell */
-        }
-
-        #timetable-display th {
-            background-color: #3498db;
-            color: white;
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 0.9em;
-            padding: 15px 8px;
-        }
-
-        #timetable-display td {
-            background-color: #ffffff;
-            font-size: 0.9em;
-            color: #555;
-            height: 80px; /* Fixed height for time slots */
-        }
-
-        #timetable-display td:first-child { /* Time column */
-            background-color: #e8f0fe;
-            font-weight: bold;
-            color: #2c3e50;
-            min-width: 90px; /* Keep time column a bit wider on larger screens */
-        }
-
-        .class-cell { /* Styling for individual class blocks within timetable cells */
-            background-color: #e0f2f7; /* Light blue for class cells */
-            border-left: 4px solid #2196f3; /* Blue accent */
-            border-radius: 5px;
-            padding: 8px;
-            margin: 2px; /* Small margin around the class block */
-            height: 100%; /* Fill available space */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-            transition: transform 0.1s ease; /* Added transition for hover */
-            cursor: pointer; /* Added cursor pointer */
-        }
-
-        .class-cell:hover { /* Added hover effect */
-            transform: translateY(-2px);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .class-cell strong {
-            display: block;
-            font-size: 1em;
-            color: #0d47a1;
-            margin-bottom: 3px;
-        }
-
-        /* Filter styling */
+        /* Filters */
         .filters {
             display: flex;
             flex-wrap: wrap;
             gap: 15px;
-            margin-bottom: 20px;
-            padding: 15px;
+            margin-bottom: 30px;
+            padding: 20px;
             background-color: #e8f0fe;
             border-radius: 8px;
             box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
             align-items: center;
             justify-content: center;
+            transition: all 0.3s ease-in-out;
         }
+
+        .filters.hidden {
+            display: none;
+            opacity: 0;
+            height: 0;
+            overflow: hidden;
+            padding: 0 20px; /* Adjust padding for hidden state */
+            margin-bottom: 0; /* Adjust margin for hidden state */
+        }
+
+        .filters.visible {
+            display: flex; /* Or block, grid, etc., depending on final layout */
+            opacity: 1;
+            height: auto; /* Allow content to dictate height */
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
 
         .filters label {
             font-weight: bold;
@@ -350,10 +140,10 @@
         .filters select,
         .filters input[type="text"],
         .filters input[type="date"] {
-            padding: 8px 10px;
+            padding: 10px 12px;
             border: 1px solid #cce7ff;
             border-radius: 5px;
-            font-size: 0.95rem;
+            font-size: 1rem;
             color: #555;
             background-color: #f8faff;
             transition: border-color 0.3s ease;
@@ -367,32 +157,125 @@
             box-shadow: 0 0 0 3px rgba(109, 175, 247, 0.2);
         }
 
-        /* Custom Subscribe Button Styling */
-        .subscribe-btn-container {
+        /* Loader Styles */
+        .loader {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 2s linear infinite;
+            margin: 50px auto;
+            display: none; /* Hidden by default */
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loader.show {
+            display: block;
+        }
+
+        /* Content Sections */
+        .content-section {
+            transition: all 0.5s ease-in-out;
+            padding-top: 20px; /* Give some space when visible */
+        }
+
+        .content-section.hidden {
+            display: none;
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+            padding-top: 0;
+        }
+
+        .content-section.visible {
+            display: block;
+            opacity: 1;
+            max-height: 2000px; /* Arbitrary large value to allow content to show */
+        }
+
+
+        /* Timetable Grid - Now a Table */
+        #timetable-grid {
+            margin-bottom: 40px;
+            padding: 20px;
+            background-color: #f7fcfb;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            overflow-x: auto; /* Enable horizontal scrolling on small screens */
+        }
+
+        #timetable-grid table {
+            width: 100%;
+            border-collapse: collapse;
+            /* min-width: 700px; Removed for better mobile responsiveness */
+        }
+
+        #timetable-grid th,
+        #timetable-grid td {
+            border: 1px solid #e0e0e0;
+            padding: 12px 8px;
             text-align: center;
-            margin-top: 30px;
-            margin-bottom: 20px;
+            vertical-align: top;
+            min-width: 100px; /* Minimum width for cells on larger screens */
         }
 
-        .subscribe-btn {
-            background-color: #28a745; /* Green color for subscribe */
+        #timetable-grid th {
+            background-color: #3498db;
             color: white;
-            padding: 12px 25px;
-            font-size: 1.1em;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            padding: 15px 8px;
         }
 
-        .subscribe-btn:hover {
-            background-color: #218838;
+        #timetable-grid td {
+            background-color: #ffffff;
+            font-size: 0.9em;
+            color: #555;
+            height: 80px; /* Fixed height for time slots */
+        }
+
+        #timetable-grid td:first-child { /* Time column */
+            background-color: #e8f0fe;
+            font-weight: bold;
+            color: #2c3e50;
+            min-width: 90px; /* Keep time column a bit wider on larger screens */
+        }
+
+        .table-class-cell {
+            background-color: #e0f2f7; /* Light blue for class cells */
+            border-left: 4px solid #2196f3; /* Blue accent */
+            border-radius: 5px;
+            padding: 8px;
+            margin: 2px; /* Small margin around the class block */
+            height: 100%; /* Fill available space */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            transition: transform 0.1s ease;
+            cursor: pointer; /* Indicate clickability */
+        }
+
+        .table-class-cell:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(40, 167, 69, 0.4);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
-        /* --- Tooltip/Popup Styles (Restored) --- */
+        .table-class-cell strong {
+            display: block;
+            font-size: 1em;
+            color: #0d47a1;
+            margin-bottom: 3px;
+        }
+
+        /* Tooltip/Popup Styles */
         .class-details-popup-overlay {
             position: fixed;
             top: 0;
@@ -469,83 +352,248 @@
             color: #333;
         }
 
-        /* --- Mobile Responsive Table Styles (Revised for Visibility and Table Format) --- */
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px; /* Slightly more padding than previous attempt, less than desktop */
-                width: calc(100% - 20px); /* Adjust width based on new padding */
-            }
-            h1, h2 {
-                margin-bottom: 15px; /* Reduce heading margin */
-                font-size: 1.5em; /* Smaller headings */
-            }
-            .tab-switcher {
-                margin-bottom: 15px; /* Reduce tab switcher margin */
-                gap: 5px; /* Smaller gap */
-            }
-            .tab-switcher button {
-                padding: 8px 15px; /* Smaller button padding */
-                font-size: 0.9em; /* Smaller button font */
-            }
-            .filters {
-                gap: 5px; /* Smaller gap in filters */
-                padding: 8px; /* Reduced padding for filters */
-                margin-bottom: 10px; /* Reduced margin below filters */
-            }
-            .filters label {
-                font-size: 0.85em; /* Smaller label font */
-            }
-            .filters select,
-            .filters input[type="text"],
-            .filters input[type="date"] {
-                padding: 4px 6px; /* Reduced padding for filter inputs */
-                font-size: 0.75em; /* Smaller font for filter inputs */
-            }
-
-            #timetable-display {
-                padding: 8px; /* Reduced padding for timetable container */
-                margin-bottom: 15px; /* Reduced margin below timetable */
-                overflow-x: auto; /* Explicitly allow horizontal scrolling */
-            }
-
-            #timetable-display table {
-                width: 100%; /* Ensure it takes full width of its container */
-                border-collapse: collapse;
-                table-layout: auto; /* Allow auto layout for better content fitting */
-                min-width: 600px; /* Set a minimum width for the table to prevent extreme squishing */
-                                  /* This will cause horizontal scroll, but ensures readability */
-            }
-
-            #timetable-display th,
-            #timetable-display td {
-                padding: 6px 4px; /* Reduced padding for cells */
-                font-size: 0.7em; /* Smaller font size for all cells */
-                white-space: normal; /* Allow text to wrap */
-                word-break: break-word; /* Break long words aggressively */
-                height: auto; /* Allow height to adjust based on content */
-            }
-
-            #timetable-display th {
-                font-size: 0.75em; /* Slightly larger font for headers than cells */
-                padding: 8px 4px; /* Reduced header padding */
-            }
-
-            #timetable-display td:first-child { /* Time column */
-                min-width: 60px; /* Ensure time column has enough space */
-                font-size: 0.8em; /* Slightly larger font for time for readability */
-                padding: 6px 4px;
-            }
-
-            .class-cell {
-                padding: 3px; /* Reduced padding for class cells */
-                margin: 1px; /* Reduced margin around class blocks */
-                height: auto; /* Allow height to adjust */
-            }
-            .class-cell strong {
-                font-size: 0.8em; /* Smaller subject name */
-            }
+        /* Events List */
+        #events-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            background-color: #fdfdfd;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
+        .event-card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Pushes time-left to bottom */
+        }
+
+        .event-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        .event-card.assignment { border-left: 5px solid #ff9800; } /* Orange */
+        .event-card.exam { border-left: 5px solid #f44336; }      /* Red */
+        .event-card.notice { border-left: 5px solid #4caf50; }    /* Green */
+        .event-card.holiday { border-left: 5px solid #9c27b0; }    /* Purple */
+        /* Add more colors for different event types */
+
+        .event-card h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 1.3em;
+        }
+
+        .event-card p {
+            margin: 5px 0;
+            font-size: 1em;
+            color: #555;
+        }
+
+        .event-card .type {
+            font-weight: bold;
+            color: #666;
+            text-transform: uppercase;
+            font-size: 0.85em;
+            margin-bottom: 8px;
+        }
+
+        .event-card .date-time { /* Combined date and time display */
+            font-weight: bold;
+            color: #1a73e8;
+            margin-top: 5px;
+        }
+
+        .event-card .time-left {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #d32f2f; /* Red for urgent */
+            margin-top: auto; /* Push to bottom */
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            text-align: right;
+        }
+
+        .event-card .time-left.soon {
+            color: #fb8c00; /* Orange for soon */
+        }
+
+        .event-card .time-left.overdue {
+            color: #b71c1c; /* Darker red for overdue */
+            font-style: italic;
+        }
+
+        /* Highlight for scrolled-to event */
+        .highlight-card {
+            box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.5), 0 4px 12px rgba(0, 0, 0, 0.12); /* Blue glow */
+            animation: pulse-highlight 1.5s ease-out;
+        }
+
+        @keyframes pulse-highlight {
+            0% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.5), 0 4px 12px rgba(0, 0, 0, 0.12); }
+            50% { box-shadow: 0 0 0 8px rgba(52, 152, 219, 0.8), 0 4px 12px rgba(0, 0, 0, 0.12); }
+            100% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.5), 0 4px 12px rgba(0, 0, 0, 0.12); }
+        }
+
+
+        .no-events-message {
+            text-align: center;
+            grid-column: 1 / -1; /* Span across all columns in the grid */
+            padding: 30px;
+            font-size: 1.2em;
+            color: #777;
+            background-color: #f0f0f0;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        /* Admin Form Styles - Included for completeness but not used in this single file */
+        .event-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 600px;
+            margin: 30px auto;
+            padding: 30px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .event-form label {
+            font-weight: bold;
+            color: #34495e;
+            margin-bottom: 5px;
+        }
+
+        .event-form input[type="text"],
+        .event-form input[type="date"],
+        .event-form select,
+        .event-form textarea {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            color: #555;
+            background-color: #fff;
+            width: 100%;
+            box-sizing: border-box; /* Include padding in element's total width and height */
+        }
+
+        .event-form input[type="text"]:focus,
+        .event-form input[type="date"]:focus,
+        .event-form select:focus,
+        .event-form textarea:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .event-form button {
+            padding: 12px 25px;
+            background-color: #28a745; /* Green for add button */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin-top: 15px;
+        }
+
+        .event-form button:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Footer Styles */
+        .footer {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+            flex-shrink: 0;
+        }
+
+        .footer p {
+            margin: 0;
+            font-size: 0.9em;
+        }
+
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .header .logo {
+                margin-bottom: 10px;
+            }
+            .filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .view-switcher button {
+                flex: 1; /* Make buttons take equal width */
+            }
+
+            #timetable-grid table {
+                min-width: unset; /* Allow table to shrink on small screens */
+            }
+            #timetable-grid th,
+            #timetable-grid td {
+                min-width: unset; /* Allow cells to shrink */
+                padding: 8px 4px; /* Reduced padding */
+            }
+            #timetable-grid td:first-child {
+                min-width: 60px; /* Keep time column a bit wider */
+            }
+            .table-class-cell {
+                padding: 5px; /* Reduced padding for class cells */
+            }
+            .table-class-cell strong {
+                font-size: 0.9em;
+            }
+            .table-class-cell span {
+                /* Removed this for smaller screens when only subject is shown */
+                display: none;
+            }
+            .container {
+                padding: 15px; /* Adjust padding for smaller screens */
+                width: calc(100% - 30px); /* Adjust width based on new padding */
+            }
+        }
     </style>
 </head>
 <body>
@@ -557,81 +605,43 @@
     </header>
 
     <div class="container">
-        <h1>Class Schedule & Important Events</h1>
+        <h1>Class Timetable & Event Reminder</h1>
 
-        <div class="tab-switcher">
-            <button id="showTimetableBtn" class="active">Timetable</button>
-            <button id="showEventsBtn">Events</button>
+        <div class="view-switcher">
+            <button id="showTimetableBtn" class="active">Show Timetable</button>
+            <button id="showEventsBtn">Show Events</button>
         </div>
 
-        <!-- Subscribe Button Container -->
-        <div class="subscribe-btn-container">
-            <button id="subscribeButton" class="subscribe-btn">Subscribe to Notifications</button>
-        </div>
-
-        <!-- Timetable Section -->
-        <div id="timetable-section" class="content-section active">
-            <h2>Current Timetable</h2>
-            <div id="timetable-filters" class="filters">
-                <label for="timetableDayFilter">Filter by Day:</label>
-                <select id="timetableDayFilter">
-                    <option value="">All Days</option>
-                    <option value="Monday">Monday</option>
-                    <option value="Tuesday">Tuesday</option>
-                    <option value="Wednesday">Wednesday</option>
-                    <option value="Thursday">Thursday</option>
-                    <option value="Friday">Friday</option>
-                    <option value="Saturday">Saturday</option>
-                    <option value="Sunday">Sunday</option>
+        <div id="filters" class="filters hidden">
+            <label for="eventType">Filter by Type:</label>
+            <select id="eventType">
+                <option value="">All</option>
+                <option value="Assignment">Assignment</option>
+                <option value="Exam">Exam</option>
+                <option value="Notice">Notice</option>
+                <option value="Holiday">Holiday</option>
                 </select>
 
-                <label for="timetableSubjectFilter">Filter by Subject:</label>
-                <input type="text" id="timetableSubjectFilter" placeholder="Enter subject...">
+            <label for="eventSubject">Filter by Subject:</label>
+            <input type="text" id="eventSubject" placeholder="Enter subject...">
 
-                <label for="timetableTeacherFilter">Filter by Teacher:</label>
-                <input type="text" id="timetableTeacherFilter" placeholder="Enter teacher...">
-
-                <label for="timetableRoomFilter">Filter by Room:</label>
-                <input type="text" id="timetableRoomFilter" placeholder="Enter room...">
-
-                <!-- Removed Filter by Title for Timetable -->
-            </div>
-            <div id="timetable-display">
-                <p class="no-events-message">Loading timetable...</p>
-            </div>
-            <div id="timetableLoader" class="loader show"></div>
+            <label for="eventDate">Filter by Date:</label>
+            <input type="date" id="eventDate">
         </div>
 
-        <!-- Events Section -->
-        <div id="events-section" class="content-section">
+        <div id="loader" class="loader show"></div> <div id="timetable-section" class="content-section">
+            <h2>Weekly Timetable</h2>
+            <div id="timetable-grid">
+                </div>
+        </div>
+
+        <div id="events-section" class="content-section hidden">
             <h2>Upcoming Events</h2>
-            <div id="event-filters" class="filters">
-                <label for="eventTypeFilter">Filter by Type:</label>
-                <select id="eventTypeFilter">
-                    <option value="">All Types</option>
-                    <option value="Assignment">Assignment</option>
-                    <option value="Exam">Exam</option>
-                    <option value="Notice">Notice</option>
-                    <option value="Holiday">Holiday</option>
-                </select>
-
-                <label for="eventDateFilter">Filter by Date:</label>
-                <input type="date" id="eventDateFilter">
-
-                <label for="eventSubjectFilter">Filter by Subject:</label>
-                <input type="text" id="eventSubjectFilter" placeholder="Enter subject...">
-
-                <label for="eventTitleFilter">Filter by Title:</label>
-                <input type="text" id="eventTitleFilter" placeholder="Enter title...">
-            </div>
-            <div id="currentEventsList">
-                <p class="no-events-message">Loading events...</p>
-            </div>
-            <div id="eventsLoader" class="loader show"></div>
+            <div id="events-list">
+                </div>
         </div>
     </div>
 
-    <!-- Class Details Popup (Restored) -->
     <div id="classDetailsPopupOverlay" class="class-details-popup-overlay">
         <div class="class-details-popup">
             <button class="close-btn">&times;</button>
@@ -639,96 +649,100 @@
             <p><strong>Teacher:</strong> <span id="popupTeacher"></span></p>
             <p><strong>Room:</strong> <span id="popupRoom"></span></p>
             <p><strong>Time:</strong> <span id="popupTime"></span></p>
-            <p id="popupEffectiveUntil" style="font-style: italic; font-size: 0.9em; color: #777;"></p>
+            <p id="popupEffectiveUntil" style="font-style: italic; font-size: 0.9em; color: #777;"></p> <!-- New line for effective date -->
         </div>
     </div>
-
 
     <footer class="footer">
         <p>&copy; 2025 Class Timetable & Event Reminder. All rights reserved.</p>
     </footer>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // IMPORTANT: Replace 'YOUR_WEB_APP_URL' with your deployed Google Apps Script URL
+        /* --- script.js content starts here --- */
+        document.addEventListener('DOMContentLoaded', async () => {
+            // IMPORTANT: This URL is provided by the user.
             const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbztJs-3nqRRaxzJG-Buw2CbY5Gqm2_hj_xDf5xhUQ2ebrV2eANFVUzfXHehQEiQ_wZAGQ/exec';
             // IMPORTANT: This SECRET_KEY MUST match the one in your Google Apps Script (Code.gs)
             const SECRET_KEY = 'your_secret_key_here'; // <--- CHANGE THIS!
 
-            // Tab elements
+            const loader = document.getElementById('loader');
             const showTimetableBtn = document.getElementById('showTimetableBtn');
             const showEventsBtn = document.getElementById('showEventsBtn');
             const timetableSection = document.getElementById('timetable-section');
             const eventsSection = document.getElementById('events-section');
+            const filters = document.getElementById('filters');
 
-            // Timetable elements
-            const timetableDisplay = document.getElementById('timetable-display');
-            const timetableLoader = document.getElementById('timetableLoader');
-            // Timetable filters
-            const timetableDayFilter = document.getElementById('timetableDayFilter');
-            const timetableSubjectFilter = document.getElementById('timetableSubjectFilter');
-            const timetableTeacherFilter = document.getElementById('timetableTeacherFilter');
-            const timetableRoomFilter = document.getElementById('timetableRoomFilter');
+            const timetableGrid = document.getElementById('timetable-grid');
+            const eventsList = document.getElementById('events-list');
+            const eventTypeFilter = document.getElementById('eventType');
+            const eventSubjectFilter = document.getElementById('eventSubject');
+            const eventDateFilter = document.getElementById('eventDate');
 
-            // Event elements
-            const currentEventsList = document.getElementById('currentEventsList');
-            const eventsLoader = document.getElementById('eventsLoader');
-            // Event filters
-            const eventTypeFilter = document.getElementById('eventTypeFilter');
-            const eventDateFilter = document.getElementById('eventDateFilter');
-            const eventSubjectFilter = document.getElementById('eventSubjectFilter');
-            const eventTitleFilter = document.getElementById('eventTitleFilter');
-
-            // Custom Subscribe Button
-            const subscribeButton = document.getElementById('subscribeButton');
-
-
-            // Class Details Popup elements (Restored)
             const classDetailsPopupOverlay = document.getElementById('classDetailsPopupOverlay');
             const popupSubject = document.getElementById('popupSubject');
             const popupTeacher = document.getElementById('popupTeacher');
             const popupRoom = document.getElementById('popupRoom');
             const popupTime = document.getElementById('popupTime');
-            const popupEffectiveUntil = document.getElementById('popupEffectiveUntil');
+            const popupEffectiveUntil = document.getElementById('popupEffectiveUntil'); // New element
             const popupCloseBtn = classDetailsPopupOverlay.querySelector('.close-btn');
 
+            let allEvents = []; // Global array to store all fetched events
+            const activeCountdowns = {}; // Store countdown intervals by event ID
 
-            let allTimetableData = []; // To store raw timetable data
-            let allEventsData = [];    // To store raw event data
-            let eventCountdownInterval; // Variable to store the interval ID for event countdowns
+            const showLoader = () => loader.classList.add('show');
+            const hideLoader = () => loader.classList.remove('show');
 
+            const fetchData = async (sheetName) => {
+                try {
+                    // Include secretKey and a dummy token for GET requests to satisfy authentication in Apps Script
+                    const url = new URL(WEB_APP_URL);
+                    url.searchParams.append('sheet', sheetName);
+                    url.searchParams.append('secretKey', SECRET_KEY);
+                    url.searchParams.append('token', 'dummy_token_for_public_read'); // A dummy token for public read
+                                                                                     // Apps Script will check if it's 'valid'
+                                                                                     // We could make doGet not require a token for public data,
+                                                                                     // but for now, this keeps it consistent with doPost auth.
 
-            // Function to show/hide sections
-            const showSection = (sectionToShow) => {
-                timetableSection.classList.remove('active');
-                eventsSection.classList.remove('active');
-                showTimetableBtn.classList.remove('active');
-                showEventsBtn.classList.remove('active');
-
-                // Clear existing countdown interval if switching away from events
-                if (eventCountdownInterval) {
-                    clearInterval(eventCountdownInterval);
-                    eventCountdownInterval = null;
-                }
-
-                sectionToShow.classList.add('active');
-                if (sectionToShow === timetableSection) {
-                    showTimetableBtn.classList.add('active');
-                    applyTimetableFilters(); // Re-apply filters when showing timetable
-                } else if (sectionToShow === eventsSection) {
-                    showEventsBtn.classList.add('active');
-                    applyEventFilters(); // Re-apply filters when showing events
-                    // Start countdown interval when events section is active
-                    eventCountdownInterval = setInterval(updateEventCountdowns, 1000);
+                    const response = await fetch(url.toString());
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    return data;
+                } catch (error) {
+                    console.error(`Error fetching ${sheetName} data:`, error);
+                    return []; // Return empty array on error
                 }
             };
 
-            // Generic function to show/hide loader
-            const toggleLoader = (loaderElement, show) => {
-                if (show) {
-                    loaderElement.classList.add('show');
+            const showSection = (sectionId) => {
+                const sections = [timetableSection, eventsSection];
+                sections.forEach(section => {
+                    if (section.id === sectionId) {
+                        section.classList.remove('hidden');
+                        section.classList.add('visible');
+                    } else {
+                        section.classList.add('hidden');
+                        section.classList.remove('visible');
+                    }
+                });
+
+                // Toggle filters visibility based on active section
+                if (sectionId === 'events-section') {
+                    filters.classList.remove('hidden');
+                    filters.classList.add('visible');
                 } else {
-                    loaderElement.classList.remove('show');
+                    filters.classList.add('hidden');
+                    filters.classList.remove('visible');
+                }
+
+                // Update active button state
+                showTimetableBtn.classList.remove('active');
+                showEventsBtn.classList.remove('active');
+                if (sectionId === 'timetable-section') {
+                    showTimetableBtn.classList.add('active');
+                } else {
+                    showEventsBtn.classList.add('active');
                 }
             };
 
@@ -771,135 +785,12 @@
                 }
             };
 
-            // Function to calculate time left for an event
-            const calculateTimeLeft = (eventDate, eventTime) => {
-                const now = new Date();
-                const eventDateTime = new Date(`${eventDate} ${eventTime}`);
 
-                // Explicitly check if eventDateTime is a valid date
-                if (isNaN(eventDateTime.getTime())) {
-                    console.error(`Failed to parse date/time for countdown: Date=${eventDate}, Time=${eventTime}`);
-                    return { text: "Invalid Date/Time", overdue: false }; // Indicate a problem
-                }
+            const renderTimetable = (timetableData) => {
+                timetableGrid.innerHTML = ''; // Clear previous content
 
-                const diffMs = eventDateTime - now; // Difference in milliseconds
-
-                if (diffMs <= 0) {
-                    return { text: "Event Overdue", overdue: true };
-                }
-
-                const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
-
-                let timeLeftString = "";
-                if (days > 0) {
-                    timeLeftString += `${days}d `;
-                }
-                if (hours > 0 || days > 0) {
-                    timeLeftString += `${hours}h `;
-                }
-                if (minutes > 0 || hours > 0 || days > 0) {
-                    timeLeftString += `${minutes}m `;
-                }
-                timeLeftString += `${seconds}s`;
-
-                return { text: timeLeftString.trim(), overdue: false };
-            };
-
-            // Function to update all event countdowns (no longer triggers notifications automatically)
-            const updateEventCountdowns = () => {
-                document.querySelectorAll('.event-card').forEach(card => {
-                    const eventDate = card.dataset.eventDate;
-                    const eventTime = card.dataset.eventTime;
-                    const timeLeftElement = card.querySelector('.time-left');
-
-                    if (eventDate && eventTime && timeLeftElement) {
-                        const { text, overdue } = calculateTimeLeft(eventDate, eventTime);
-                        timeLeftElement.textContent = `Time Left: ${text}`;
-                        if (overdue) {
-                            timeLeftElement.classList.add('overdue');
-                        } else {
-                            timeLeftElement.classList.remove('overdue');
-                        }
-                    }
-                });
-            };
-
-            // Function to fetch all data (timetable and events)
-            const fetchAndRenderData = async () => {
-                toggleLoader(timetableLoader, true);
-                toggleLoader(eventsLoader, true);
-                timetableDisplay.innerHTML = '<p class="no-events-message">Loading timetable...</p>';
-                currentEventsList.innerHTML = '<p class="no-events-message">Loading events...</p>';
-
-                try {
-                    // Fetch Timetable Data
-                    const timetableUrl = new URL(WEB_APP_URL);
-                    timetableUrl.searchParams.append('sheet', 'Timetable');
-                    timetableUrl.searchParams.append('secretKey', SECRET_KEY);
-                    // No token needed for public view
-                    const timetableResponse = await fetch(timetableUrl.toString());
-                    if (!timetableResponse.ok) {
-                        throw new Error(`HTTP error! status: ${timetableResponse.status}`);
-                    }
-                    allTimetableData = await timetableResponse.json();
-                    applyTimetableFilters(); // Apply filters initially
-
-                    // Fetch Events Data
-                    const eventsUrl = new URL(WEB_APP_URL);
-                    eventsUrl.searchParams.append('sheet', 'Events');
-                    eventsUrl.searchParams.append('secretKey', SECRET_KEY);
-                    // No token needed for public view
-                    const eventsResponse = await fetch(eventsUrl.toString());
-                    if (!eventsResponse.ok) {
-                        throw new Error(`HTTP error! status: ${eventsResponse.status}`);
-                    }
-                    allEventsData = await eventsResponse.json();
-                    applyEventFilters(); // Apply filters initially
-
-                } catch (error) {
-                    console.error('Error fetching data:', error);
-                    timetableDisplay.innerHTML = '<p class="no-events-message error">Failed to load timetable. Please check your Apps Script deployment.</p>';
-                    currentEventsList.innerHTML = '<p class="no-events-message error">Failed to load events. Please check your Apps Script deployment.</p>';
-                } finally {
-                    toggleLoader(timetableLoader, false);
-                    toggleLoader(eventsLoader, false);
-                }
-            };
-
-            // Function to apply filters and render timetable
-            const applyTimetableFilters = () => {
-                let filteredTimetable = [...allTimetableData];
-
-                const day = timetableDayFilter.value;
-                const subject = timetableSubjectFilter.value.toLowerCase().trim();
-                const teacher = timetableTeacherFilter.value.toLowerCase().trim();
-                const room = timetableRoomFilter.value.toLowerCase().trim();
-
-                if (day) {
-                    filteredTimetable = filteredTimetable.filter(entry => entry.Day === day);
-                }
-                if (subject) {
-                    filteredTimetable = filteredTimetable.filter(entry => entry.Subject && entry.Subject.toLowerCase().includes(subject));
-                }
-                if (teacher) {
-                    filteredTimetable = filteredTimetable.filter(entry => entry.Teacher && entry.Teacher.toLowerCase().includes(teacher));
-                }
-                if (room) {
-                    filteredTimetable = filteredTimetable.filter(entry => entry.Room && entry.Room.toLowerCase().includes(room));
-                }
-
-                renderTimetable(filteredTimetable);
-            };
-
-            // Function to render timetable (Table structure)
-            const renderTimetable = (timetableToRender) => {
-                timetableDisplay.innerHTML = ''; // Clear previous content
-
-                if (timetableToRender.length === 0) {
-                    timetableDisplay.innerHTML = '<p class="no-events-message">No timetable entries found matching your criteria.</p>';
+                if (timetableData.length === 0) {
+                    timetableGrid.innerHTML = '<p class="no-events-message">No timetable data available.</p>';
                     return;
                 }
 
@@ -907,11 +798,11 @@
                 const uniqueTimeSlots = new Set();
                 const classesByTimeAndDay = {}; // Structure: { "HH:MM": { "Day": [class1, class2], ... }, ... }
 
-                // Filter out entries past their EffectiveUntilDate
                 const today = new Date();
                 today.setHours(0, 0, 0, 0); // Normalize today's date to start of day for comparison
 
-                const activeTimetableEntries = timetableToRender.filter(item => {
+                // Filter timetable data based on EffectiveUntilDate
+                const filteredTimetableData = timetableData.filter(item => {
                     if (item.EffectiveUntilDate) {
                         const effectiveDate = new Date(item.EffectiveUntilDate);
                         effectiveDate.setHours(0, 0, 0, 0); // Normalize effective date to start of day
@@ -921,7 +812,7 @@
                 });
 
 
-                activeTimetableEntries.forEach(item => {
+                filteredTimetableData.forEach(item => {
                     if (item.StartTime) {
                         const formattedStartTime = formatTime(item.StartTime);
                         uniqueTimeSlots.add(formattedStartTime);
@@ -945,7 +836,6 @@
                 });
 
                 const table = document.createElement('table');
-
                 const thead = document.createElement('thead');
                 const tbody = document.createElement('tbody');
 
@@ -968,8 +858,7 @@
                         if (classesInSlot.length > 0) {
                             classesInSlot.forEach(classItem => {
                                 const classDiv = document.createElement('div');
-                                classDiv.className = 'class-cell';
-                                // Store data attributes for popup
+                                classDiv.className = 'table-class-cell';
                                 classDiv.dataset.subject = classItem.Subject;
                                 classDiv.dataset.teacher = classItem.Teacher;
                                 classDiv.dataset.room = classItem.Room;
@@ -977,8 +866,7 @@
                                 classDiv.dataset.endTime = formatTime(classItem.EndTime);
                                 classDiv.dataset.effectiveUntilDate = classItem.EffectiveUntilDate || ''; // Store new field
 
-                                // Only display subject name by default
-                                classDiv.innerHTML = `<strong>${classItem.Subject || 'N/A'}</strong>`;
+                                classDiv.innerHTML = `<strong>${classItem.Subject}</strong>`;
                                 cell.appendChild(classDiv);
                             });
                         } else {
@@ -989,190 +877,159 @@
                     tbody.appendChild(row);
                 });
                 table.appendChild(tbody);
-                timetableDisplay.appendChild(table);
+                timetableGrid.appendChild(table);
 
-                if (activeTimetableEntries.length === 0 && timetableToRender.length > 0) {
-                    timetableDisplay.innerHTML = '<p class="no-events-message">All timetable entries have expired or are not effective yet.</p>';
-                } else if (activeTimetableEntries.length === 0) {
-                    timetableDisplay.innerHTML = '<p class="no-events-message">No timetable entries found matching your criteria.</p>';
+                if (filteredTimetableData.length > 0 && table.innerHTML === '<thead><tr><th>Time</th><th>Monday</th><th>Tuesday</th><th>Wednesday</th><th>Thursday</th><th>Friday</th><th>Saturday</th><th>Sunday</th></tr></thead><tbody></tbody>') {
+                     timetableGrid.innerHTML = '<p class="no-events-message">Timetable data found, but no valid classes were rendered. Ensure "Day", "StartTime", and "EndTime" columns are correctly populated.</p>';
+                } else if (filteredTimetableData.length === 0 && timetableData.length > 0) {
+                     timetableGrid.innerHTML = '<p class="no-events-message">All timetable entries have expired or are not effective yet.</p>';
                 }
             };
 
-
-            // Function to apply filters and render events
-            const applyEventFilters = () => {
-                let filteredEvents = [...allEventsData];
-
-                const type = eventTypeFilter.value.toLowerCase();
-                const date = eventDateFilter.value;
-                const subject = eventSubjectFilter.value.toLowerCase().trim();
-                const title = eventTitleFilter.value.toLowerCase().trim();
-
-                if (type) {
-                    filteredEvents = filteredEvents.filter(event => event.Type && event.Type.toLowerCase() === type);
+            // Clears all active countdown intervals
+            const clearAllCountdowns = () => {
+                for (const eventId in activeCountdowns) {
+                    clearInterval(activeCountdowns[eventId]);
+                    delete activeCountdowns[eventId];
                 }
-                if (date) {
-                    filteredEvents = filteredEvents.filter(event => event.Date === date);
-                }
-                if (subject) {
-                    filteredEvents = filteredEvents.filter(event => event.Subject && event.Subject.toLowerCase().includes(subject));
-                }
-                if (title) {
-                    filteredEvents = filteredEvents.filter(event => event.Title && event.Title.toLowerCase().includes(title));
-                }
-
-                renderEvents(filteredEvents);
             };
 
-            // Function to render events (Card structure)
-            const renderEvents = (eventsToRender) => {
-                currentEventsList.innerHTML = ''; // Clear previous content
+            // Function to update a single event's countdown
+            const updateCountdown = (event, countdownElement) => {
+                const eventDateTime = new Date(`${event.Date} ${event.Time}`);
+                const now = new Date();
+                const diff = eventDateTime.getTime() - now.getTime();
 
-                if (eventsToRender.length === 0) {
-                    currentEventsList.innerHTML = '<p class="no-events-message">No events found matching your criteria.</p>';
+                if (diff < 0) {
+                    countdownElement.textContent = "OVERDUE";
+                    countdownElement.className = 'time-left overdue';
+                    clearInterval(activeCountdowns[event.ID]);
+                    delete activeCountdowns[event.ID];
                     return;
                 }
 
-                // Sort events by date and time
-                eventsToRender.sort((a, b) => {
+                const seconds = Math.floor((diff / 1000) % 60);
+                const minutes = Math.floor((diff / (1000 * 60)) % 60);
+                const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+                let countdownText = "";
+                let countdownClass = "time-left";
+
+                if (days > 0) {
+                    countdownText = `${days} day${days > 1 ? 's' : ''} left`;
+                    if (days <= 7) countdownClass += " soon";
+                } else if (hours > 0) {
+                    countdownText = `${hours}h ${minutes}m ${seconds}s left`;
+                    countdownClass += " soon";
+                } else if (minutes > 0) {
+                    countdownText = `${minutes}m ${seconds}s left`;
+                    countdownClass += " soon";
+                } else {
+                    countdownText = `${seconds}s left`;
+                    countdownClass += " soon";
+                }
+
+                countdownElement.textContent = countdownText;
+                countdownElement.className = countdownClass;
+            };
+
+
+            const renderEvents = (eventsToRender) => {
+                clearAllCountdowns();
+                eventsList.innerHTML = '';
+
+                const now = new Date();
+                let activeEvents = eventsToRender.filter(event => {
+                    const eventDateTime = new Date(`${event.Date} ${event.Time}`);
+                    return eventDateTime >= now;
+                });
+
+                if (activeEvents.length === 0) {
+                    eventsList.innerHTML = '<p class="no-events-message">No upcoming events found matching your criteria.</p>';
+                    return;
+                }
+
+                activeEvents.sort((a, b) => {
                     const dateTimeA = new Date(`${a.Date} ${a.Time}`);
                     const dateTimeB = new Date(`${b.Date} ${b.Time}`);
                     return dateTimeA - dateTimeB;
                 });
 
-                eventsToRender.forEach(event => {
+                activeEvents.forEach(event => {
                     const card = document.createElement('div');
-                    card.className = `event-card ${event.Type ? event.Type.toLowerCase().replace(/\s/g, '-') : ''}`;
-                    
-                    // --- Start of crucial change for NaN fix and robust date/time parsing ---
-                    let formattedEventDateForDataset = '';
-                    if (event.Date) {
-                        try {
-                            const d = new Date(event.Date);
-                            if (!isNaN(d.getTime())) {
-                                // Ensure YYYY-MM-DD format
-                                formattedEventDateForDataset = d.getFullYear() + '-' +
-                                                              (d.getMonth() + 1).toString().padStart(2, '0') + '-' +
-                                                              d.getDate().toString().padStart(2, '0');
-                            } else {
-                                // If initial parsing fails, try to use it as-is if it looks like a date string
-                                const potentialDate = String(event.Date).split('T')[0]; // Try to get YYYY-MM-DD from ISO or similar
-                                if (potentialDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                                    formattedEventDateForDataset = potentialDate;
-                                } else {
-                                    console.warn("Could not reliably format event.Date for dataset (fallback to 'Invalid Date'):", event.Date);
-                                    formattedEventDateForDataset = 'Invalid Date'; // Indicate a problem
-                                }
-                            }
-                        } catch (e) {
-                            console.warn("Error processing event.Date for dataset (fallback to 'Invalid Date'):", event.Date, e);
-                            formattedEventDateForDataset = 'Invalid Date'; // Indicate a problem
-                        }
-                    } else {
-                        formattedEventDateForDataset = 'Invalid Date'; // No date provided
-                    }
+                    card.className = `event-card ${event.Type.toLowerCase().replace(/\s/g, '-')}`;
+                    card.id = `event-${event.ID}`; // Set ID for deep linking
 
-                    let formattedEventTimeForDataset = '';
-                    if (event.Time) {
-                        try {
-                            // Attempt to parse time string reliably for HH:MM (24-hour) format
-                            const timeParts = String(event.Time).match(/^(\d{1,2}):(\d{2})(:(\d{2}))?\s*(AM|PM)?/i);
-                            if (timeParts) {
-                                let hours = parseInt(timeParts[1], 10);
-                                const minutes = timeParts[2];
-                                const ampm = timeParts[5];
-
-                                if (ampm && ampm.toLowerCase() === 'pm' && hours < 12) {
-                                    hours += 12;
-                                } else if (ampm && ampm.toLowerCase() === 'am' && hours === 12) { // Midnight 12 AM
-                                    hours = 0;
-                                }
-                                formattedEventTimeForDataset = `${hours.toString().padStart(2, '0')}:${minutes}`;
-                            } else {
-                                // Fallback if regex fails, try to parse as a Date object to get HH:MM
-                                const t = new Date(`2000-01-01T${event.Time}`); // Use a dummy date to parse time
-                                if (!isNaN(t.getTime())) {
-                                    formattedEventTimeForDataset = t.toTimeString().split(' ')[0].substring(0, 5); // Get HH:MM
-                                } else {
-                                    console.warn("Could not reliably format event.Time for dataset (fallback to '00:00'):", event.Time);
-                                    formattedEventTimeForDataset = '00:00'; // Default to start of day
-                                }
-                            }
-                        } catch (e) {
-                            console.warn("Error processing event.Time for dataset (fallback to '00:00'):", event.Time, e);
-                            formattedEventTimeForDataset = '00:00'; // Default to start of day
-                        }
-                    } else {
-                        formattedEventTimeForDataset = '00:00'; // No time provided, default to midnight
-                    }
-
-                    card.dataset.eventDate = formattedEventDateForDataset;
-                    card.dataset.eventTime = formattedEventTimeForDataset;
-                    // --- End of crucial change for NaN fix and robust date/time parsing ---
-
-                    card.dataset.eventId = event.ID; // Add event ID for tracking notifications
-
-                    const formattedDate = event.Date ? new Date(event.Date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A';
-                    const formattedTime = event.Time || 'N/A';
+                    const formattedDate = new Date(event.Date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                    const formattedTime = event.Time;
 
                     card.innerHTML = `
-                        <p><strong>Type:</strong> ${event.Type || 'N/A'}</p>
-                        <h3>${event.Title || 'No Title'}</h3>
-                        <p><strong>Subject:</strong> ${event.Subject || 'N/A'}</p>
-                        <p><strong>Date:</strong> ${formattedDate}</p>
-                        <p><strong>Time:</strong> ${formattedTime}</p>
-                        <p><strong>Details:</strong> ${event.Details || 'N/A'}</p>
-                        <p class="time-left"></p> <!-- Placeholder for time left -->
-                        <!-- Removed "Remind Me" button -->
+                        <p class="type">${event.Type}</p>
+                        <h3>${event.Title}</h3>
+                        <p><strong>Subject:</strong> ${event.Subject}</p>
+                        <p class="date-time"><strong>Date:</strong> ${formattedDate} <strong>Time:</strong> ${formattedTime}</p>
+                        <p><strong>Details:</strong> ${event.Details}</p>
+                        <div class="time-left" id="countdown-${event.ID}"></div>
                     `;
-                    currentEventsList.appendChild(card);
-                });
+                    eventsList.appendChild(card);
 
-                // Initial update of countdowns
-                updateEventCountdowns();
-            };
+                    const countdownElement = document.getElementById(`countdown-${event.ID}`);
+                    if (countdownElement) {
+                        updateCountdown(event, countdownElement);
 
-            // Event Listeners for Tab Switching
-            showTimetableBtn.addEventListener('click', () => showSection(timetableSection));
-            showEventsBtn.addEventListener('click', () => showSection(eventsSection));
-
-            // Event Listeners for Timetable Filters
-            timetableDayFilter.addEventListener('change', applyTimetableFilters);
-            timetableSubjectFilter.addEventListener('input', applyTimetableFilters);
-            timetableTeacherFilter.addEventListener('input', applyTimetableFilters);
-            timetableRoomFilter.addEventListener('input', applyTimetableFilters);
-
-            // Event Listeners for Event Filters
-            eventTypeFilter.addEventListener('change', applyEventFilters);
-            eventDateFilter.addEventListener('change', applyEventFilters);
-            eventSubjectFilter.addEventListener('input', applyEventFilters);
-            eventTitleFilter.addEventListener('input', applyEventFilters);
-
-            // Event listener for custom subscribe button
-            subscribeButton.addEventListener('click', () => {
-                OneSignalDeferred.push(async function(OneSignal) {
-                    const permission = await OneSignal.getNotificationPermission();
-                    if (permission === 'default') {
-                        OneSignal.showSlidedownPrompt();
-                    } else if (permission === 'denied') {
-                        // User has previously denied, guide them to browser settings
-                        alert("Please enable notifications for this site in your browser settings.");
-                    } else { // 'granted'
-                        alert("You are already subscribed to notifications!");
+                        const eventDateTime = new Date(`${event.Date} ${event.Time}`);
+                        const diffMs = eventDateTime.getTime() - now.getTime();
+                        if (diffMs > 0 && diffMs <= (24 * 60 * 60 * 1000) + (5 * 60 * 1000)) {
+                            activeCountdowns[event.ID] = setInterval(() => {
+                                updateCountdown(event, countdownElement);
+                            }, 1000);
+                        }
                     }
                 });
-            });
+            };
 
+            const applyFilters = () => {
+                let filteredEvents = [...allEvents];
 
-            // Event listener for showing class details popup using event delegation (Restored)
-            timetableDisplay.addEventListener('click', (event) => {
-                const classCell = event.target.closest('.class-cell');
+                const type = eventTypeFilter.value.toLowerCase();
+                const subject = eventSubjectFilter.value.toLowerCase().trim();
+                const date = eventDateFilter.value;
+
+                if (type) {
+                    filteredEvents = filteredEvents.filter(event => event.Type.toLowerCase() === type);
+                }
+
+                if (subject) {
+                    filteredEvents = filteredEvents.filter(event => event.Subject.toLowerCase().includes(subject));
+                }
+
+                if (date) {
+                    filteredEvents = filteredEvents.filter(event => event.Date === date);
+                }
+
+                renderEvents(filteredEvents);
+            };
+
+            // Add event listeners for filters
+            eventTypeFilter.addEventListener('change', applyFilters);
+            eventSubjectFilter.addEventListener('input', applyFilters);
+            eventDateFilter.addEventListener('change', applyFilters);
+
+            // Add event listeners for view switcher buttons
+            showTimetableBtn.addEventListener('click', () => showSection('timetable-section'));
+            showEventsBtn.addEventListener('click', () => showSection('events-section'));
+
+            // Event listener for showing class details popup using event delegation
+            timetableGrid.addEventListener('click', (event) => {
+                const classCell = event.target.closest('.table-class-cell');
                 if (classCell) {
                     popupSubject.textContent = classCell.dataset.subject;
                     popupTeacher.textContent = classCell.dataset.teacher;
                     popupRoom.textContent = classCell.dataset.room;
                     popupTime.textContent = `${classCell.dataset.startTime} - ${classCell.dataset.endTime}`;
 
+                    // Display Effective Until Date if available
                     if (classCell.dataset.effectiveUntilDate && classCell.dataset.effectiveUntilDate !== 'N/A') {
                         const formattedEffectiveDate = new Date(classCell.dataset.effectiveUntilDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
                         popupEffectiveUntil.textContent = `Effective Until: ${formattedEffectiveDate}`;
@@ -1186,30 +1043,79 @@
                 }
             });
 
-            // Event listener for closing class details popup (Restored)
+            // Event listener for closing class details popup
             popupCloseBtn.addEventListener('click', () => {
                 classDetailsPopupOverlay.classList.remove('show');
             });
 
-            // Close popup when clicking outside it (Restored)
+            // Close popup when clicking outside it
             classDetailsPopupOverlay.addEventListener('click', (event) => {
                 if (event.target === classDetailsPopupOverlay) {
                     classDetailsPopupOverlay.classList.remove('show');
                 }
             });
 
-            // Removed "Remind Me" button event listener
-
-            // Initial data fetch and render on page load
-            fetchAndRenderData();
-
-            // Clear interval when the user navigates away or closes the tab
-            window.addEventListener('beforeunload', () => {
-                if (eventCountdownInterval) {
-                    clearInterval(eventCountdownInterval);
+            // Function to check URL fragment and scroll to element
+            const checkUrlFragmentAndScroll = () => {
+                const hash = window.location.hash;
+                if (hash) {
+                    if (hash.startsWith('#event-')) {
+                        const eventId = hash.substring(7); // Remove '#event-' prefix
+                        showSection('events-section'); // Ensure events section is visible
+                        // Wait a moment for rendering to complete
+                        setTimeout(() => {
+                            const targetElement = document.getElementById(hash.substring(1)); // Get element by ID (remove #)
+                            if (targetElement) {
+                                targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                targetElement.classList.add('highlight-card'); // Add highlight
+                                setTimeout(() => {
+                                    targetElement.classList.remove('highlight-card'); // Remove highlight after animation
+                                }, 2000); // Match animation duration
+                            }
+                        }, 500); // Short delay to allow section to become visible and content to render
+                    } else if (hash === '#timetable-section') {
+                        showSection('timetable-section');
+                        setTimeout(() => {
+                            const targetElement = document.getElementById('timetable-grid'); // Scroll to the timetable grid
+                            if (targetElement) {
+                                targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }
+                        }, 500);
+                    }
                 }
-            });
+            };
+
+
+            // Initial data fetch and rendering on page load
+            showLoader();
+            try {
+                const [timetableData, eventsData] = await Promise.all([
+                    fetchData('Timetable'),
+                    fetchData('Events')
+                ]);
+
+                renderTimetable(timetableData);
+                allEvents = eventsData;
+                applyFilters();
+
+                // Call this after initial rendering to handle deep links
+                checkUrlFragmentAndScroll();
+
+                // Default to timetable if no specific hash is present
+                if (!window.location.hash) {
+                    showSection('timetable-section');
+                }
+
+
+            } catch (error) {
+                console.error("Failed to fetch initial data:", error);
+                timetableGrid.innerHTML = '<p class="no-events-message">Failed to load timetable data. Please try again later.</p>';
+                eventsList.innerHTML = '<p class="no-events-message">Failed to load events data. Please try again later.</p>';
+            } finally {
+                hideLoader();
+            }
         });
+        /* --- script.js content ends here --- */
     </script>
 </body>
 </html>
