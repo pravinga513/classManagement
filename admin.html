@@ -3,1858 +3,535 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Timetable & Events</title>
+    <title>Admin Dashboard - Timetable & Events</title>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
-        /* Basic styling for consistency with index.html */
+        :root {
+            --bg-dark: #1a1a2e;
+            --bg-card: #16213e;
+            --primary-accent: #0f3460;
+            --secondary-accent: #e94560;
+            --text-primary: #ffffff;
+            --text-secondary: #a7a9be;
+            --border-color: #3d4a6c;
+            --success-color: #28a745;
+            --error-color: #e74c3c;
+            --border-radius: 12px;
+            --font-sans: 'Inter', sans-serif;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f7f6;
-            color: #333;
+            font-family: var(--font-sans);
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
             line-height: 1.6;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
         }
-
         .header {
-            background-color: #2c3e50;
-            color: white;
-            padding: 15px 20px;
+            background-color: var(--bg-card);
+            padding: 1rem 1.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
-            margin-bottom: 20px;
-            flex-shrink: 0;
+            border-bottom: 1px solid var(--border-color);
         }
-
-        .header .logo {
-            font-size: 1.8em;
-            font-weight: bold;
-            text-decoration: none;
-            color: white;
-        }
-
-        .header .nav-link {
-            color: white;
-            text-decoration: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
-        }
-
-        .header .nav-link:hover {
-            background-color: #34495e;
-        }
-
+        .header .logo { font-size: 1.5em; font-weight: 700; text-decoration: none; color: var(--text-primary); }
+        .header .nav-link { color: var(--text-secondary); text-decoration: none; padding: 0.5em 1em; border-radius: var(--border-radius); transition: all 0.3s ease; }
+        .header .nav-link:hover { background-color: var(--primary-accent); color: var(--text-primary); }
         .container {
-            max-width: 800px; /* Wider for forms */
-            margin: 20px auto;
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 1200px;
+            margin: 1.5rem auto;
+            padding: 0 1.5rem;
             flex-grow: 1;
-            width: calc(100% - 40px); /* Account for body padding if it were present, or ensure it fits */
-            box-sizing: border-box;
         }
+        h1, h2 { font-weight: 700; margin-bottom: 1.5rem; text-align: center; }
+        h1 { font-size: clamp(2rem, 5vw, 2.5rem); }
+        h2 { font-size: clamp(1.5rem, 4vw, 2rem); color: var(--text-secondary); }
+        
+        #loginSection .admin-form { max-width: 450px; margin: 2rem auto; padding: 2.5rem; background-color: var(--bg-card); border-radius: var(--border-radius); border: 1px solid var(--border-color); }
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        #signOutBtn { padding: 10px 20px; background-color: var(--secondary-accent); color: white; border: none; border-radius: var(--border-radius); font-size: 1em; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+        #signOutBtn:hover { background-color: #c73049; transform: translateY(-2px); }
+        .admin-view-switcher { display: flex; justify-content: center; margin-bottom: 2rem; background-color: var(--primary-accent); border-radius: var(--border-radius); padding: 0.5rem; flex-wrap: wrap; }
+        .admin-view-switcher button { flex: 1; padding: 12px 20px; font-size: 1em; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; background-color: transparent; color: var(--text-secondary); transition: all 0.3s ease; }
+        .admin-view-switcher button.active { background-color: var(--bg-card); color: var(--text-primary); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .form-section { display: none; }
+        .form-section.visible { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        h1, h2 {
-            color: #2c3e50;
-            text-align: center;
-            margin-bottom: 25px;
-        }
+        .admin-form { display: grid; grid-template-columns: 1fr; gap: 1.5rem; max-width: 700px; margin: 0 auto; padding: 2rem; background-color: var(--bg-card); border-radius: var(--border-radius); border: 1px solid var(--border-color); }
+        .admin-form label { font-weight: 500; color: var(--text-secondary); }
+        .admin-form input, .admin-form select, .admin-form textarea { padding: 14px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem; font-family: var(--font-sans); color: var(--text-primary); background-color: var(--primary-accent); width: 100%; }
+        .admin-form input:focus, .admin-form select:focus, .admin-form textarea:focus { outline: none; border-color: var(--secondary-accent); box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.2); }
+        .admin-form button[type="submit"] { padding: 14px 25px; background-color: var(--success-color); color: white; border: none; border-radius: var(--border-radius); font-size: 1.1em; font-weight: 700; cursor: pointer; transition: all 0.3s ease; grid-column: 1 / -1; }
+        .admin-form button[type="submit"]:hover { background-color: #218838; transform: translateY(-2px); }
+        .admin-form button[type="submit"]:disabled { background-color: var(--border-color); cursor: not-allowed; transform: none; }
 
-        /* View Switcher for Admin Panel */
-        .admin-view-switcher {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 30px;
-            gap: 10px;
-            flex-wrap: wrap; /* Allow wrapping on small screens */
-        }
+        /* --- Manage Section --- */
+        .admin-filters { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; margin-bottom: 1.5rem; padding: 1rem; background-color: var(--primary-accent); border-radius: var(--border-radius); }
+        .admin-filters > * { flex: 1 1 200px; }
+        .admin-filters select, .admin-filters input { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.9rem; color: var(--text-primary); background-color: var(--bg-card); }
+        
+        #admin-events-list-container, #admin-timetable-list-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
+        .admin-card { background-color: var(--bg-card); border-radius: var(--border-radius); padding: 1.5rem; border-left: 5px solid var(--primary-accent); transition: all 0.3s ease; display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: center; }
+        .admin-card h3 { margin: 0 0 5px; font-size: 1.2em; } .admin-card p { margin: 4px 0; color: var(--text-secondary); font-size: 0.95em; }
+        .admin-card .actions { display: flex; gap: 10px; }
+        
+        /* General Action Button Styles */
+        .actions button { padding: 8px 15px; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9em; font-weight: 600; transition: all 0.3s ease; }
+        .actions .edit-btn { background-color: var(--primary-accent); color: var(--text-primary); }
+        .actions .delete-btn { background-color: var(--secondary-accent); color: var(--text-primary); }
+        .actions .secondary-btn { background-color: var(--border-color); color: var(--text-primary); }
 
-        .admin-view-switcher button {
-            padding: 12px 25px;
-            font-size: 1.1em;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            background-color: #e0e0e0;
-            color: #555;
-            transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
 
-        .admin-view-switcher button:hover {
-            background-color: #d0d0d0;
-            transform: translateY(-2px);
-        }
-
-        .admin-view-switcher button.active {
-            background-color: #3498db;
-            color: white;
-            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
-        }
-
-        /* Form Styles */
-        .form-section {
-            transition: all 0.5s ease-in-out;
-            padding-top: 20px; /* Give some space when visible */
-        }
-
-        .form-section.hidden {
-            display: none;
-            opacity: 0;
-            height: 0;
-            overflow: hidden;
-            padding-top: 0;
-        }
-
-        .form-section.visible {
-            display: block;
-            opacity: 1;
-            /* Removed max-height to allow natural growth */
-            height: auto; /* Ensure it takes necessary height */
-        }
-
-        .admin-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            max-width: 600px;
-            margin: 0 auto; /* Center forms within their section */
-            padding: 30px;
-            background-color: #f9f9f9;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-        }
-
-        .admin-form label {
-            font-weight: bold;
-            color: #34495e;
-            margin-bottom: 5px;
-            display: block;
-        }
-
-        .admin-form input[type="text"],
-        .admin-form input[type="date"],
-        .admin-form input[type="time"],
-        .admin-form input[type="text"], /* Changed from email to text for flexibility */
-        .admin-form input[type="password"],
-        .admin-form select,
-        .admin-form textarea {
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 1rem;
-            color: #555;
-            background-color: #fff;
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease; }
+        .modal-overlay.show { opacity: 1; visibility: visible; }
+        .modal-content { background-color: var(--bg-card); padding: 2rem; border-radius: var(--border-radius); border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; transform: scale(0.95); transition: transform 0.3s ease; position: relative; }
+        .modal-overlay.show .modal-content { transform: scale(1); }
+        .modal-content h3 { border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.5rem; }
+        .modal-content .close-btn { position: absolute; top: 1rem; right: 1rem; font-size: 2rem; cursor: pointer; color: var(--text-secondary); background: none; border: none; transition: all 0.2s ease; line-height: 1; padding: 0; }
+        .modal-content .close-btn:hover { color: var(--text-primary); transform: rotate(90deg); }
+        .modal-content form button { background-color: var(--secondary-accent); }
+        
+        .message { margin-top: 1rem; padding: 12px; border-radius: var(--border-radius); text-align: center; font-weight: 500; display: none; }
+        .message.success { background-color: var(--success-color); color: white; }
+        .message.error { background-color: var(--error-color); color: white; }
+        
+        .loader { border: 4px solid var(--border-color); border-top: 4px solid var(--secondary-accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; display: none; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loader.show { display: block; }
+        
+        /* New Full Screen Overlay Loader */
+        #fullScreenLoader {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            box-sizing: border-box;
+            height: 100%;
+            background-color: rgba(26, 26, 46, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 9999;
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        #fullScreenLoader.show {
+            display: flex;
+        }
+        #fullScreenLoader .loader {
+            display: block; /* Always visible when parent is shown */
+        }
+        #fullScreenLoader p {
+            font-size: 1.2em;
+            font-weight: 500;
+            color: var(--text-primary);
         }
 
-        .admin-form input[type="text"]:focus,
-        .admin-form input[type="date"]:focus,
-        .admin-form input[type="time"]:focus,
-        .admin-form input[type="text"]:focus, /* Changed from email to text for flexibility */
-        .admin-form input[type="password"]:focus,
-        .admin-form select:focus,
-        .admin-form textarea:focus {
-            border-color: #3498db;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        .no-data-message { text-align: center; padding: 3rem; font-size: 1.2em; color: var(--text-secondary); background-color: var(--primary-accent); border-radius: var(--border-radius); }
+        
+        /* New Day Switcher Styles from index.html */
+        .day-switcher {
+            display: flex;
+            overflow-x: auto;
+            gap: 0.5rem;
+            padding-bottom: 1rem;
+            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+            margin-bottom: 1.5rem;
         }
-
-        .admin-form button[type="submit"] {
-            padding: 12px 25px;
-            background-color: #28a745; /* Green for add button */
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            margin-top: 15px;
+        .day-switcher::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
         }
-
-        .admin-form button[type="submit"]:hover {
-            background-color: #218838;
-            transform: translateY(-2px);
-        }
-
-        .message {
-            margin-top: 20px;
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
-            font-weight: bold;
-            display: none;
-        }
-
-        .message.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .message.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .loader {
-            border: 8px solid #f3f3f3;
-            border-top: 8px solid #3498db;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 2s linear infinite;
-            margin: 20px auto;
-            display: none;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .loader.show {
-            display: block;
-        }
-
-        .footer {
-            background-color: #2c3e50;
-            color: white;
-            text-align: center;
-            padding: 20px;
-            margin-top: 40px;
+        .day-switcher button {
             flex-shrink: 0;
-        }
-
-        .footer p {
-            margin: 0;
-            font-size: 0.9em;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                gap: 10px;
-            }
-            .header .logo {
-                margin-bottom: 10px;
-            }
-            .container {
-                padding: 15px;
-                width: calc(100% - 30px);
-            }
-            .admin-form {
-                padding: 15px; /* Reduced padding for forms on mobile */
-                gap: 10px; /* Slightly reduced gap for form elements */
-            }
-            .admin-view-switcher button {
-                flex: 1 1 auto; /* Allow buttons to grow and wrap */
-            }
-            /* Adjust padding for modals on smaller screens */
-            .edit-modal, .view-timetable-details-popup {
-                padding: 20px; /* Reduced padding for modals */
-                max-height: 90vh; /* Limit height to 90% of viewport height */
-                overflow-y: auto; /* Enable vertical scrolling */
-            }
-            .edit-modal form input,
-            .edit-modal form select,
-            .edit-modal form textarea,
-            .view-timetable-details-popup p span {
-                padding: 8px; /* Slightly smaller input padding within modals */
-                font-size: 0.95em; /* Adjust font size for better fit */
-            }
-            .edit-modal form button,
-            .view-timetable-details-popup .actions button {
-                padding: 8px 12px; /* Smaller button padding in modals */
-                font-size: 0.9em; /* Smaller font size for buttons in modals */
-            }
-        }
-
-        /* --- Event List for Admin Page --- */
-        #admin-events-list { /* Still a grid for events */
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            padding: 20px;
-            background-color: #fdfdfd;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            margin-top: 20px;
-        }
-
-        .admin-event-card { /* Event card styling */
-            background-color: #ffffff;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            border-left: 5px solid #3498db; /* Default border color */
-        }
-        .admin-event-card.assignment { border-left-color: #ff9800; }
-        .admin-event-card.exam { border-left-color: #f44336; }
-        .admin-event-card.notice { border-left-color: #4caf50; }
-        .admin-event-card.holiday { border-left-color: #9c27b0; }
-
-        .admin-event-card h3 {
-            margin-top: 0;
-            margin-bottom: 10px;
-            color: #333;
-            font-size: 1.3em;
-        }
-
-        .admin-event-card p {
-            margin: 5px 0;
-            font-size: 1em;
-            color: #555;
-        }
-
-        .admin-event-card .actions {
-            margin-top: 15px;
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-        }
-
-        .admin-event-card .actions button {
-            padding: 8px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9em;
-            transition: background-color 0.2s ease;
-        }
-
-        .admin-event-card .actions .edit-btn {
-            background-color: #3498db;
-            color: white;
-        }
-        .admin-event-card .actions .edit-btn:hover {
-            background-color: #2980b9;
-        }
-
-        .admin-event-card .actions .delete-btn {
-            background-color: #e74c3c;
-            color: white;
-        }
-        .admin-event-card .actions .delete-btn:hover {
-            background-color: #c0392b;
-        }
-
-        /* --- Timetable Grid for Admin Page (New Styles) --- */
-        #admin-timetable-list {
-            margin-bottom: 40px;
-            padding: 20px;
-            background-color: #f7fcfb;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            overflow-x: auto; /* Enable horizontal scrolling on small screens */
-        }
-
-        #admin-timetable-list table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        #admin-timetable-list th,
-        #admin-timetable-list td {
-            border: 1px solid #e0e0e0;
-            padding: 12px 8px;
-            text-align: center;
-            vertical-align: top;
-            min-width: 100px; /* Minimum width for cells on larger screens */
-        }
-
-        #admin-timetable-list th {
-            background-color: #3498db;
-            color: white;
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 0.9em;
-            padding: 15px 8px;
-        }
-
-        #admin-timetable-list td {
-            background-color: #ffffff;
-            font-size: 0.9em;
-            color: #555;
-            height: 80px; /* Fixed height for time slots */
-        }
-
-        #admin-timetable-list td:first-child { /* Time column */
-            background-color: #e8f0fe;
-            font-weight: bold;
-            color: #2c3e50;
-            min-width: 90px; /* Keep time column a bit wider on larger screens */
-        }
-
-        .admin-table-class-cell { /* Styling for individual class blocks within timetable cells */
-            background-color: #e0f2f7; /* Light blue for class cells */
-            border-left: 4px solid #2196f3; /* Blue accent */
-            border-radius: 5px;
-            padding: 8px;
-            margin: 2px; /* Small margin around the class block */
-            height: 100%; /* Fill available space */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-            transition: transform 0.1s ease;
-            cursor: pointer; /* Indicate clickability */
-        }
-
-        .admin-table-class-cell:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .admin-table-class-cell strong {
-            display: block;
-            font-size: 1em;
-            color: #0d47a1;
-            margin-bottom: 3px;
-        }
-
-        /* --- Edit Event/Timetable Modals --- */
-        .edit-modal-overlay { /* Generic modal overlay */
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease;
-        }
-
-        .edit-modal-overlay.show {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .edit-modal { /* Generic modal content */
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            position: relative;
-            max-width: 500px;
-            width: 90%;
-            text-align: left;
-            transform: scale(0.9);
-            transition: transform 0.3s ease;
-            max-height: 90vh; /* Apply max-height here */
-            overflow-y: auto; /* Enable scrolling */
-        }
-
-        .edit-modal-overlay.show .edit-modal {
-            transform: scale(1);
-        }
-
-        .edit-modal h3 {
-            margin-top: 0;
-            color: #2c3e50;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-        }
-
-        .edit-modal .close-btn {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 24px;
-            cursor: pointer;
-            color: #888;
-            background: none;
-            border: none;
-            line-height: 1;
-            padding: 5px;
-            transition: color 0.2s ease;
-        }
-
-        .edit-modal .close-btn:hover {
-            color: #333;
-        }
-
-        .edit-modal form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .edit-modal form label {
-            font-weight: bold;
-            color: #34495e;
-            margin-bottom: 5px;
-            display: block;
-        }
-        .edit-modal form input[type="text"],
-        .edit-modal form input[type="date"],
-        .edit-modal form input[type="time"],
-        .edit-modal form select,
-        .edit-modal form textarea {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 1rem;
-            color: #555;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        .edit-modal form button {
             padding: 10px 20px;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 5px;
             font-size: 1em;
+            font-weight: 600;
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
             cursor: pointer;
-            transition: background-color 0.2s ease;
-            margin-top: 10px;
+            background-color: var(--primary-accent);
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
         }
-        .edit-modal form button:hover {
-            background-color: #2980b9;
-        }
-        .edit-modal .message {
-            margin-top: 10px;
-            padding: 8px;
-            font-size: 0.9em;
+        .day-switcher button.active {
+            background-color: var(--secondary-accent);
+            color: var(--text-primary);
+            border-color: var(--secondary-accent);
         }
 
-        /* --- View Timetable Details Popup (New) --- */
-        .view-timetable-details-popup-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease;
+        .agenda-day-content {
+            display: none;
         }
-
-        .view-timetable-details-popup-overlay.show {
-            opacity: 1;
-            visibility: visible;
+        .agenda-day-content.active {
+            display: block;
+            animation: fadeIn 0.4s;
         }
-
-        .view-timetable-details-popup {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            position: relative;
-            max-width: 400px;
-            width: 90%;
-            text-align: left;
-            transform: scale(0.9);
-            transition: transform 0.3s ease;
-            max-height: 90vh; /* Apply max-height here */
-            overflow-y: auto; /* Enable scrolling */
-        }
-
-        .view-timetable-details-popup-overlay.show .view-timetable-details-popup {
-            transform: scale(1);
-        }
-
-        .view-timetable-details-popup h3 {
-            margin-top: 0;
-            color: #2c3e50;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-        }
-
-        .view-timetable-details-popup p {
-            margin: 8px 0;
-            color: #555;
-            font-size: 1.05em;
-        }
-
-        .view-timetable-details-popup p strong {
-            color: #34495e;
-            display: inline-block;
-            min-width: 80px;
-        }
-
-        .view-timetable-details-popup .close-btn {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 24px;
-            cursor: pointer;
-            color: #888;
-            background: none;
-            border: none;
-            line-height: 1;
-            padding: 5px;
-            transition: color 0.2s ease;
-        }
-
-        .view-timetable-details-popup .close-btn:hover {
-            color: #333;
-        }
-
-        .view-timetable-details-popup .actions {
-            margin-top: 20px;
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-        }
-
-        .view-timetable-details-popup .actions button {
-            padding: 10px 18px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.95em;
-            transition: background-color 0.2s ease;
-        }
-
-        .view-timetable-details-popup .actions .edit-btn {
-            background-color: #3498db;
-            color: white;
-        }
-        .view-timetable-details-popup .actions .edit-btn:hover {
-            background-color: #2980b9;
-        }
-
-        .view-timetable-details-popup .actions .delete-btn {
-            background-color: #e74c3c;
-            color: white;
-        }
-        .view-timetable-details-popup .actions .delete-btn:hover {
-            background-color: #c0392b;
-        }
-
-        /* Filters for Admin Events */
-        .admin-filters {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 20px; /* Reduced margin to bring filters closer to list */
-            padding: 15px; /* Slightly reduced padding */
-            background-color: #e8f0fe;
-            border-radius: 8px;
-            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
-            align-items: center;
-            justify-content: center;
-        }
-
-        .admin-filters label {
-            font-weight: bold;
-            color: #34495e;
-        }
-
-        .admin-filters select,
-        .admin-filters input[type="text"],
-        .admin-filters input[type="date"] {
-            padding: 8px 10px; /* Smaller padding for filters */
-            border: 1px solid #cce7ff;
-            border-radius: 5px;
-            font-size: 0.95rem; /* Slightly smaller font */
-            color: #555;
-            background-color: #f8faff;
-            transition: border-color 0.3s ease;
-        }
-
-        .admin-filters select:focus,
-        .admin-filters input[type="text"]:focus,
-        .admin-filters input[type="date"]:focus {
-            border-color: #6daff7;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(109, 175, 247, 0.2);
-        }
-
-        @media (max-width: 768px) {
-            .admin-filters {
-                flex-direction: column;
-                align-items: stretch;
-            }
-        }
-
     </style>
 </head>
 <body>
     <header class="header">
-        <a href="index.html" class="logo">Timetable & Events</a>
-        <nav>
-            <a href="index.html" class="nav-link">View Timetable</a>
-        </nav>
+        <a href="index.html" class="logo">Admin Dashboard</a>
+        <nav><a href="index.html" class="nav-link">View Site</a></nav>
     </header>
 
-    <div class="container">
-        <h1>Admin Panel</h1>
-
-        <!-- Login Form Section -->
+    <main class="container">
         <div id="loginSection" class="form-section visible">
-            <h2>Admin Login</h2>
+            <h1>Admin Login</h1>
             <form id="loginForm" class="admin-form">
-                <label for="adminEmailOrUsername">Email or Username:</label>
-                <input type="text" id="adminEmailOrUsername" name="emailOrUsername" placeholder="admin@example.com or username" required>
-
-                <label for="adminPassword">Password:</label>
-                <input type="password" id="adminPassword" name="password" required>
-
+                <div><label for="adminEmailOrUsername">Email or Username</label><input type="text" id="adminEmailOrUsername" name="emailOrUsername" required></div>
+                <div><label for="adminPassword">Password</label><input type="password" id="adminPassword" name="password" required></div>
                 <button type="submit">Login</button>
-                <div id="loginMessage" class="message"></div>
-                <div id="loginLoader" class="loader"></div>
+                <div id="loginMessage" class="message"></div><div id="loginLoader" class="loader"></div>
             </form>
         </div>
 
-        <!-- Admin Content Section (Hidden by default, shown after login) -->
-        <div id="adminContent" class="form-section hidden">
-            <div style="text-align: right; margin-bottom: 20px;">
-                <button id="signOutBtn" style="padding: 8px 15px; background-color: #f44336; color: white; border: none; border-radius: 5px; cursor: pointer;">Sign Out</button>
-            </div>
-
+        <div id="adminContent" class="form-section">
+            <div class="dashboard-header"><h1>Dashboard</h1><button id="signOutBtn">Sign Out</button></div>
             <div class="admin-view-switcher">
-                <button id="showEventFormBtn" class="active">Add Event</button>
-                <button id="showTimetableFormBtn">Add/Update Timetable</button>
-                <button id="showManageEventsBtn">Manage Events</button>
-                <button id="showManageTimetableBtn">Manage Timetable</button> <!-- New button -->
+                <button data-target="eventFormSection" class="active">Add Event</button>
+                <button data-target="timetableFormSection">Add Timetable</button>
+                <button data-target="manageEventsSection">Manage Events</button>
+                <button data-target="manageTimetableSection">Manage Timetable</button>
             </div>
-
-            <div id="eventFormSection" class="form-section visible">
-                <h2>Add New Event</h2>
-                <form id="eventForm" class="admin-form">
-                    <label for="eventType">Event Type:</label>
-                    <select id="eventType" name="Type" required>
-                        <option value="">Select Type</option>
-                        <option value="Assignment">Assignment</option>
-                        <option value="Exam">Exam</option>
-                        <option value="Notice">Notice</option>
-                        <option value="Holiday">Holiday</option>
-                    </select>
-
-                    <label for="eventDate">Date:</label>
-                    <input type="date" id="eventDate" name="Date" required>
-
-                    <label for="eventTime">Time:</label>
-                    <input type="time" id="eventTime" name="Time">
-
-                    <label for="eventSubject">Subject:</label>
-                    <input type="text" id="eventSubject" name="Subject" placeholder="e.g., Mathematics" required>
-
-                    <label for="eventTitle">Title:</label>
-                    <input type="text" id="eventTitle" name="Title" placeholder="e.g., Midterm Exam" required>
-
-                    <label for="eventDetails">Details:</label>
-                    <textarea id="eventDetails" name="Details" rows="4" placeholder="e.g., Chapters 1-5, bring calculator" required></textarea>
-
-                    <button type="submit">Add Event</button>
-                    <div id="eventMessage" class="message"></div>
-                    <div id="eventLoader" class="loader"></div>
-                </form>
-            </div>
-
-            <div id="timetableFormSection" class="form-section hidden">
-                <h2>Add/Update Timetable Entry</h2>
-                <form id="timetableForm" class="admin-form">
-                    <label for="timetableDay">Day:</label>
-                    <select id="timetableDay" name="Day" required>
-                        <option value="">Select Day</option>
-                        <option value="Monday">Monday</option>
-                        <option value="Tuesday">Tuesday</option>
-                        <option value="Wednesday">Wednesday</option>
-                        <option value="Thursday">Thursday</option>
-                        <option value="Friday">Friday</option>
-                        <option value="Saturday">Saturday</option>
-                        <option value="Sunday">Sunday</option>
-                    </select>
-
-                    <label for="timetableStartTime">Start Time:</label>
-                    <input type="time" id="timetableStartTime" name="StartTime" required>
-
-                    <label for="timetableEndTime">End Time:</label>
-                    <input type="time" id="timetableEndTime" name="EndTime" required>
-
-                    <label for="timetableSubject">Subject:</label>
-                    <input type="text" id="timetableSubject" name="Subject" placeholder="e.g., Physics" required>
-
-                    <label for="timetableTeacher">Teacher:</label>
-                    <input type="text" id="timetableTeacher" name="Teacher" placeholder="e.g., Mr. Smith" required>
-
-                    <label for="timetableRoom">Room:</label>
-                    <input type="text" id="timetableRoom" name="Room" placeholder="e.g., Room 101" required>
-
-                    <label for="timetableEffectiveUntilDate">Effective Until Date (Optional):</label> <!-- New field -->
-                    <input type="date" id="timetableEffectiveUntilDate" name="EffectiveUntilDate">
-
-                    <button type="submit">Add/Update Timetable Entry</button>
-                    <div id="timetableMessage" class="message"></div>
-                    <div id="timetableLoader" class="loader"></div>
-                </form>
-            </div>
-
-            <div id="manageEventsSection" class="form-section hidden">
-                <h2>Manage Existing Events</h2>
-                <div id="adminEventFilters" class="admin-filters">
-                    <label for="adminEventTypeFilter">Filter by Type:</label>
-                    <select id="adminEventTypeFilter">
-                        <option value="">All</option>
-                        <option value="Assignment">Assignment</option>
-                        <option value="Exam">Exam</option>
-                        <option value="Notice">Notice</option>
-                        <option value="Holiday">Holiday</option>
-                    </select>
-
-                    <label for="adminEventSubjectFilter">Filter by Subject:</label>
-                    <input type="text" id="adminEventSubjectFilter" placeholder="Enter subject...">
-
-                    <label for="adminEventTitleFilter">Filter by Title:</label>
-                    <input type="text" id="adminEventTitleFilter" placeholder="Enter title...">
-
-                    <label for="adminEventDateFilter">Filter by Date:</label>
-                    <input type="date" id="adminEventDateFilter">
-                </div>
-                <div id="admin-events-list">
-                    <p class="no-events-message">Loading events...</p>
-                </div>
-                <div id="manageEventsLoader" class="loader show"></div>
-            </div>
-
-            <div id="manageTimetableSection" class="form-section hidden"> <!-- New section -->
-                <h2>Manage Timetable Entries</h2>
-                <div id="admin-timetable-list">
-                    <p class="no-events-message">Loading timetable...</p>
-                </div>
-                <div id="manageTimetableLoader" class="loader show"></div>
-            </div>
-
+            <div id="eventFormSection" class="form-section visible"></div>
+            <div id="timetableFormSection" class="form-section"></div>
+            <div id="manageEventsSection" class="form-section"></div>
+            <div id="manageTimetableSection" class="form-section"></div>
         </div>
+    </main>
+
+    <!-- Modals -->
+    <div id="editEventModalOverlay" class="modal-overlay"><div class="modal-content"><button class="close-btn">&times;</button><h3>Edit Event</h3><form id="editEventForm" class="admin-form"></form></div></div>
+    <div id="editTimetableModalOverlay" class="modal-overlay"><div class="modal-content"><button class="close-btn">&times;</button><h3>Edit Timetable Entry</h3><form id="editTimetableForm" class="admin-form"></form></div></div>
+    <div id="conflictModalOverlay" class="modal-overlay"></div>
+
+    <!-- Full Screen Loader -->
+    <div id="fullScreenLoader">
+        <div class="loader"></div>
+        <p>Processing...</p>
     </div>
-
-    <!-- Edit Event Modal -->
-    <div id="editEventModalOverlay" class="edit-modal-overlay">
-        <div class="edit-modal">
-            <button class="close-btn">&times;</button>
-            <h3>Edit Event</h3>
-            <form id="editEventForm">
-                <input type="hidden" id="editEventId" name="ID">
-
-                <label for="editEventType">Event Type:</label>
-                <select id="editEventType" name="Type" required>
-                    <option value="Assignment">Assignment</option>
-                    <option value="Exam">Exam</option>
-                    <option value="Notice">Notice</option>
-                    <option value="Holiday">Holiday</option>
-                </select>
-
-                <label for="editEventDate">Date:</label>
-                <input type="date" id="editEventDate" name="Date" required>
-
-                <label for="editEventTime">Time:</label>
-                <input type="time" id="editEventTime" name="Time">
-
-                <label for="editEventSubject">Subject:</label>
-                <input type="text" id="editEventSubject" name="Subject" required>
-
-                <label for="editEventTitle">Title:</label>
-                <input type="text" id="editEventTitle" name="Title" required>
-
-                <label for="editEventDetails">Details:</label>
-                <textarea id="editEventDetails" name="Details" rows="4" required></textarea>
-
-                <button type="submit">Save Changes</button>
-                <div id="editEventMessage" class="message"></div>
-                <div id="editEventLoader" class="loader"></div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Edit Timetable Modal -->
-    <div id="editTimetableModalOverlay" class="edit-modal-overlay"> <!-- New modal -->
-        <div class="edit-modal">
-            <button class="close-btn">&times;</button>
-            <h3>Edit Timetable Entry</h3>
-            <form id="editTimetableForm">
-                <!-- Hidden field to uniquely identify the timetable entry being edited -->
-                <input type="hidden" id="editTimetableId" name="ID"> <!-- Changed to ID -->
-
-                <label for="editTimetableDay">Day:</label>
-                <select id="editTimetableDay" name="Day" required>
-                    <option value="Monday">Monday</option>
-                    <option value="Tuesday">Tuesday</option>
-                    <option value="Wednesday">Wednesday</option>
-                    <option value="Thursday">Thursday</option>
-                    <option value="Friday">Friday</option>
-                    <option value="Saturday">Saturday</option>
-                    <option value="Sunday">Sunday</option>
-                </select>
-
-                <label for="editTimetableStartTime">Start Time:</label>
-                <input type="time" id="editTimetableStartTime" name="StartTime" required>
-
-                <label for="editTimetableEndTime">End Time:</label>
-                <input type="time" id="editTimetableEndTime" name="EndTime" required>
-
-                <label for="editTimetableSubject">Subject:</label>
-                <input type="text" id="editTimetableSubject" name="Subject" required>
-
-                <label for="editTimetableTeacher">Teacher:</label>
-                <input type="text" id="editTimetableTeacher" name="Teacher" required>
-
-                <label for="editTimetableRoom">Room:</label>
-                <input type="text" id="editTimetableRoom" name="Room" required>
-
-                <label for="editTimetableEffectiveUntilDate">Effective Until Date (Optional):</label>
-                <input type="date" id="editTimetableEffectiveUntilDate" name="EffectiveUntilDate">
-
-                <button type="submit">Save Changes</button>
-                <div id="editTimetableMessage" class="message"></div>
-                <div id="editTimetableLoader" class="loader"></div>
-            </form>
-        </div>
-    </div>
-
-    <!-- View Timetable Details Popup (New Modal) -->
-    <div id="viewTimetableDetailsPopupOverlay" class="view-timetable-details-popup-overlay">
-        <div class="view-timetable-details-popup">
-            <button class="close-btn">&times;</button>
-            <h3 id="viewPopupSubject"></h3>
-            <p><strong>Day:</strong> <span id="viewPopupDay"></span></p>
-            <p><strong>Time:</strong> <span id="viewPopupTime"></span></p>
-            <p><strong>Teacher:</strong> <span id="viewPopupTeacher"></span></p>
-            <p><strong>Room:</strong> <span id="viewPopupRoom"></span></p>
-            <p id="viewPopupEffectiveUntil" style="font-style: italic; font-size: 0.9em; color: #777;"></p>
-            <div class="actions">
-                <button class="edit-btn" id="viewPopupEditBtn">Edit</button>
-                <button class="delete-btn" id="viewPopupDeleteBtn">Delete</button>
-            </div>
-        </div>
-    </div>
-
-
-    <footer class="footer">
-        <p>&copy; 2025 Class Timetable & Event Reminder. All rights reserved.</p>
-    </footer>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // IMPORTANT: Replace 'YOUR_WEB_APP_URL' with your deployed Google Apps Script URL
-            const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbztJs-3nqRRaxzJG-Buw2CbY5Gqm2_hj_xDf5xhUQ2ebrV2eANFVUzfXHehQEiQ_wZAGQ/exec';
-            // IMPORTANT: This SECRET_KEY MUST match the one in your Google Apps Script (Code.gs)
-            const SECRET_KEY = 'your_secret_key_here'; // <--- CHANGE THIS!
+    document.addEventListener('DOMContentLoaded', () => {
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxGqXnD92jAI08s7BMsHxFd9UJIW8h1viUfkg0sAdFJAsHdnTyx0C59K_be-P2tU7mQtA/exec';
+        const SECRET_KEY = 'your_secret_key_here';
 
-            // Login elements
-            const loginSection = document.getElementById('loginSection');
-            const loginForm = document.getElementById('loginForm');
-            const loginMessageDiv = document.getElementById('loginMessage');
-            const loginLoader = document.getElementById('loginLoader');
-            const adminContent = document.getElementById('adminContent');
-            const signOutBtn = document.getElementById('signOutBtn');
+        let sessionToken = localStorage.getItem('adminSessionToken');
+        let adminUsername = localStorage.getItem('adminUsername');
+        let allEventsForAdmin = [];
+        let allTimetableForAdmin = [];
 
-            // Admin content view switchers
-            const showEventFormBtn = document.getElementById('showEventFormBtn');
-            const showTimetableFormBtn = document.getElementById('showTimetableFormBtn');
-            const showManageEventsBtn = document.getElementById('showManageEventsBtn');
-            const showManageTimetableBtn = document.getElementById('showManageTimetableBtn'); // New button
-            const eventFormSection = document.getElementById('eventFormSection');
-            const timetableFormSection = document.getElementById('timetableFormSection');
-            const manageEventsSection = document.getElementById('manageEventsSection');
-            const manageTimetableSection = document.getElementById('manageTimetableSection'); // New section
+        const loginSection = document.getElementById('loginSection');
+        const adminContent = document.getElementById('adminContent');
+        const loginForm = document.getElementById('loginForm');
+        const signOutBtn = document.getElementById('signOutBtn');
+        const viewSwitcherBtns = document.querySelectorAll('.admin-view-switcher button');
+        const fullScreenLoader = document.getElementById('fullScreenLoader');
 
-            // Event form elements
-            const eventForm = document.getElementById('eventForm');
-            const eventMessageDiv = document.getElementById('eventMessage');
-            const eventLoader = document.getElementById('eventLoader');
+        const showMessage = (el, msg, type) => { el.textContent = msg; el.className = `message ${type}`; el.style.display = 'block'; setTimeout(() => el.style.display = 'none', 5000); };
+        
+        // Updated toggleLoader to handle both inline and fullscreen loaders
+        const toggleLoader = (loaderId, formEl, show) => {
+            const loader = document.getElementById(loaderId);
+            if (loader) {
+                loader.classList.toggle('show', show);
+            }
+            if (formEl) {
+                const btn = formEl.querySelector('button[type="submit"]');
+                if (btn) btn.disabled = show;
+            }
+        };
+        
+        const robustFormatTime = (timeValue) => { if (!timeValue) return 'N/A'; try { let d = new Date(timeValue); if (isNaN(d.getTime())) { const p = timeValue.split(':'); d = new Date(); d.setHours(p[0], p[1], 0, 0); } return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }); } catch (e) { return String(timeValue); } };
 
-            // Timetable form elements
-            const timetableForm = document.getElementById('timetableForm');
-            const timetableMessageDiv = document.getElementById('timetableMessage');
-            const timetableLoader = document.getElementById('timetableLoader');
+        const showSection = async (targetId) => {
+            document.querySelectorAll('#adminContent .form-section').forEach(s => s.classList.remove('visible'));
+            viewSwitcherBtns.forEach(btn => btn.classList.remove('active'));
+            
+            const targetSection = document.getElementById(targetId);
+            if (targetSection) targetSection.classList.add('visible');
 
-            // Manage events elements
-            const adminEventsList = document.getElementById('admin-events-list');
-            const manageEventsLoader = document.getElementById('manageEventsLoader');
-            // New filter elements for admin events
-            const adminEventTypeFilter = document.getElementById('adminEventTypeFilter');
-            const adminEventSubjectFilter = document.getElementById('adminEventSubjectFilter');
-            const adminEventTitleFilter = document.getElementById('adminEventTitleFilter');
-            const adminEventDateFilter = document.getElementById('adminEventDateFilter');
+            const targetButton = document.querySelector(`.admin-view-switcher button[data-target="${targetId}"]`);
+            if (targetButton) targetButton.classList.add('active');
 
+            if (targetId === 'manageEventsSection') await fetchAndRenderAdminEvents();
+            if (targetId === 'manageTimetableSection') await fetchAndRenderAdminTimetable();
+        };
 
-            // Manage timetable elements
-            const adminTimetableList = document.getElementById('admin-timetable-list'); // New list
-            const manageTimetableLoader = document.getElementById('manageTimetableLoader'); // New loader
+        const handleLogin = async (e) => {
+            e.preventDefault();
+            toggleLoader('loginLoader', loginForm, true);
+            const msgDiv = loginForm.querySelector('.message');
+            const params = new URLSearchParams({ secretKey: SECRET_KEY, action: 'login', emailOrUsername: loginForm.emailOrUsername.value, password: loginForm.password.value });
+            try {
+                const res = await fetch(WEB_APP_URL, { method: 'POST', body: params });
+                const result = await res.json();
+                if (result.status === 'success' && result.token) {
+                    sessionToken = result.token; localStorage.setItem('adminSessionToken', sessionToken);
+                    adminUsername = result.username; localStorage.setItem('adminUsername', adminUsername);
+                    showAdminContent();
+                } else { showMessage(msgDiv, result.message || 'Login failed', 'error'); }
+            } catch (err) { showMessage(msgDiv, 'An error occurred during login.', 'error'); }
+            finally { toggleLoader('loginLoader', loginForm, false); }
+        };
 
-            // Edit event modal elements
-            const editEventModalOverlay = document.getElementById('editEventModalOverlay');
-            const editEventForm = document.getElementById('editEventForm');
-            const editEventMessageDiv = document.getElementById('editEventMessage');
-            const editEventLoader = document.getElementById('editEventLoader');
-            const editEventModalCloseBtn = editEventModalOverlay.querySelector('.close-btn');
+        const handleLogout = () => { localStorage.removeItem('adminSessionToken'); localStorage.removeItem('adminUsername'); sessionToken = null; adminUsername = null; showLoginForm(); };
+        const showAdminContent = () => { loginSection.classList.remove('visible'); adminContent.classList.add('visible'); showSection('eventFormSection'); };
+        const showLoginForm = () => { loginSection.classList.add('visible'); adminContent.classList.remove('visible'); };
+        
+        const verifySession = async () => {
+            if (!sessionToken) { showLoginForm(); return; }
+            toggleLoader('loginLoader', null, true);
+            const params = new URLSearchParams({ secretKey: SECRET_KEY, action: 'checkAuth', token: sessionToken });
+            try {
+                const res = await fetch(WEB_APP_URL, { method: 'POST', body: params });
+                const result = await res.json();
+                if (result.status === 'success' && result.authenticated) { showAdminContent(); }
+                else { handleLogout(); }
+            } catch (error) { console.error('Session verification failed:', error); handleLogout(); }
+            finally { toggleLoader('loginLoader', null, false); }
+        };
 
-            // Edit timetable modal elements
-            const editTimetableModalOverlay = document.getElementById('editTimetableModalOverlay'); // New modal
-            const editTimetableForm = document.getElementById('editTimetableForm');
-            const editTimetableMessageDiv = document.getElementById('editTimetableMessage');
-            const editTimetableLoader = document.getElementById('editTimetableLoader');
-            const editTimetableModalCloseBtn = editTimetableModalOverlay.querySelector('.close-btn');
+        const handleFormSubmit = async (e, sheetName, action, additionalData = {}) => {
+            e.preventDefault();
+            const form = e.target;
+            const msgDiv = form.querySelector('.message');
+            toggleLoader('fullScreenLoader', form, true); // Use fullscreen loader
+            
+            const formData = new FormData(form);
+            const params = new URLSearchParams({ secretKey: SECRET_KEY, token: sessionToken, sheet: sheetName, action, ...additionalData });
+            for (let [key, value] of formData.entries()) { params.append(key, value); }
+            
+            try {
+                const res = await fetch(WEB_APP_URL, { method: 'POST', body: params });
+                const result = await res.json();
+                if (result.status === 'success') {
+                    showMessage(msgDiv, result.message, 'success');
+                    if (action.startsWith('add') || action.startsWith('replace')) form.reset();
+                    const modal = form.closest('.modal-overlay');
+                    if (modal) modal.classList.remove('show');
+                    if (sheetName === 'Events') await fetchAndRenderAdminEvents();
+                    if (sheetName === 'Timetable') await fetchAndRenderAdminTimetable();
+                } else if (result.status === 'conflict') {
+                    showConflictModal(result.existingEntry, formData);
+                } else { showMessage(msgDiv, `Error: ${result.message}`, 'error'); }
+            } catch (err) { showMessage(msgDiv, `Failed to submit: ${err.message}`, 'error'); }
+            finally { toggleLoader('fullScreenLoader', form, false); }
+        };
 
-            // View Timetable Details Popup elements (New)
-            const viewTimetableDetailsPopupOverlay = document.getElementById('viewTimetableDetailsPopupOverlay');
-            const viewPopupSubject = document.getElementById('viewPopupSubject');
-            const viewPopupDay = document.getElementById('viewPopupDay');
-            const viewPopupTime = document.getElementById('viewPopupTime');
-            const viewPopupTeacher = document.getElementById('viewPopupTeacher');
-            const viewPopupRoom = document.getElementById('viewPopupRoom');
-            const viewPopupEffectiveUntil = document.getElementById('viewPopupEffectiveUntil');
-            const viewPopupEditBtn = document.getElementById('viewPopupEditBtn');
-            const viewPopupDeleteBtn = document.getElementById('viewPopupDeleteBtn');
-            const viewPopupCloseBtn = viewTimetableDetailsPopupOverlay.querySelector('.close-btn');
+        const showConflictModal = (existingEntry, newFormData) => {
+            const modal = document.getElementById('conflictModalOverlay');
+            modal.innerHTML = `<div class="modal-content">
+                <button class="close-btn">&times;</button>
+                <h3>Schedule Conflict</h3>
+                <p>This time slot is already taken by:</p>
+                <div class="admin-card" style="margin-bottom: 1.5rem; grid-template-columns: 1fr;">
+                    <div>
+                        <h3>${existingEntry.Subject}</h3>
+                        <p>${robustFormatTime(existingEntry.StartTime)} - ${robustFormatTime(existingEntry.EndTime)}</p>
+                        <p><strong>Teacher:</strong> ${existingEntry.Teacher || 'N/A'}</p>
+                        <p><strong>Room:</strong> ${existingEntry.Room || 'N/A'}</p>
+                        <p><strong>Last Modified By:</strong> ${existingEntry.LastModifiedBy || 'N/A'}</p>
+                    </div>
+                </div>
+                <p>Do you want to replace it with your new entry?</p>
+                <div class="actions" style="justify-content: flex-end; display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button id="cancelReplace" class="secondary-btn">Cancel</button>
+                    <button id="confirmReplace" class="delete-btn">Replace</button>
+                </div>
+            </div>`;
+            modal.classList.add('show');
 
-
-            let allEventsForAdmin = []; // Store events fetched for the admin panel
-            let allTimetableForAdmin = []; // Store timetable fetched for the admin panel (New)
-            let sessionToken = localStorage.getItem('adminSessionToken'); // Get token from local storage
-
-            // Function to show/hide sections
-            const showSection = async (sectionToShow) => {
-                // Hide all main content sections
-                eventFormSection.classList.add('hidden');
-                eventFormSection.classList.remove('visible');
-                timetableFormSection.classList.add('hidden');
-                timetableFormSection.classList.remove('visible');
-                manageEventsSection.classList.add('hidden');
-                manageEventsSection.classList.remove('visible');
-                manageTimetableSection.classList.add('hidden'); // Hide new section
-                manageTimetableSection.classList.remove('visible');
-
-                // Show the requested section
-                sectionToShow.classList.remove('hidden');
-                sectionToShow.classList.add('visible');
-
-                // Update active button state
-                showEventFormBtn.classList.remove('active');
-                showTimetableFormBtn.classList.remove('active');
-                showManageEventsBtn.classList.remove('active');
-                showManageTimetableBtn.classList.remove('active'); // Deactivate new button
-
-                if (sectionToShow === eventFormSection) {
-                    showEventFormBtn.classList.add('active');
-                } else if (sectionToShow === timetableFormSection) {
-                    showTimetableFormBtn.classList.add('active');
-                } else if (sectionToShow === manageEventsSection) {
-                    showManageEventsBtn.classList.add('active');
-                    await fetchAndRenderAdminEvents(); // Fetch and display events when this section is active
-                } else if (sectionToShow === manageTimetableSection) { // If managing timetable
-                    showManageTimetableBtn.classList.add('active');
-                    await fetchAndRenderAdminTimetable(); // Fetch and display timetable when this section is active
-                }
+            document.getElementById('confirmReplace').onclick = () => {
+                modal.classList.remove('show'); // Close modal immediately
+                const form = document.getElementById('timetableFormSection').querySelector('form');
+                const msgDiv = form.querySelector('.message');
+                toggleLoader('fullScreenLoader', form, true);
+                
+                const params = new URLSearchParams({ secretKey: SECRET_KEY, token: sessionToken, sheet: 'Timetable', action: 'replaceTimetable', existingId: existingEntry.ID });
+                for (let [key, value] of newFormData.entries()) { params.append(key, value); }
+                
+                fetch(WEB_APP_URL, { method: 'POST', body: params })
+                    .then(res => res.json())
+                    .then(result => {
+                        if (result.status === 'success') {
+                            showMessage(msgDiv, 'Timetable entry replaced successfully.', 'success');
+                            form.reset();
+                            fetchAndRenderAdminTimetable();
+                        } else { showMessage(msgDiv, `Error: ${result.message}`, 'error'); }
+                    })
+                    .catch(err => showMessage(msgDiv, `Failed to replace: ${err.message}`, 'error'))
+                    .finally(() => { toggleLoader('fullScreenLoader', form, false); });
             };
+            document.getElementById('cancelReplace').onclick = () => modal.classList.remove('show');
+        };
 
-            // Generic function to show messages
-            const showMessage = (messageElement, msg, type) => {
-                messageElement.textContent = msg;
-                messageElement.className = `message ${type}`;
-                messageElement.style.display = 'block';
-                setTimeout(() => {
-                    messageElement.style.display = 'none';
-                }, 5000); // Hide message after 5 seconds
-            };
+        const handleDelete = async (sheetName, id) => {
+            if (!confirm(`Are you sure you want to delete this ${sheetName.slice(0, -1)}?`)) return;
+            toggleLoader('fullScreenLoader', null, true);
+            const params = new URLSearchParams({ secretKey: SECRET_KEY, token: sessionToken, sheet: sheetName, action: 'delete', ID: id });
+            try {
+                const res = await fetch(WEB_APP_URL, { method: 'POST', body: params });
+                const result = await res.json();
+                if (result.status === 'success') {
+                    if (sheetName === 'Events') await fetchAndRenderAdminEvents();
+                    if (sheetName === 'Timetable') await fetchAndRenderAdminTimetable();
+                } else { alert(`Error: ${result.message}`); }
+            } catch (err) { alert(`Failed to delete: ${err.message}`); }
+            finally { toggleLoader('fullScreenLoader', null, false); }
+        };
 
-            // Generic function to show/hide loader
-            const toggleLoader = (loaderElement, formOrButtonElement, show) => {
-                if (show) {
-                    loaderElement.classList.add('show');
-                    // Disable the form's submit button or the relevant button
-                    if (formOrButtonElement && formOrButtonElement.tagName === 'FORM') {
-                        formOrButtonElement.querySelector('button[type="submit"]').disabled = true;
-                    } else if (formOrButtonElement && formOrButtonElement.tagName === 'BUTTON') {
-                        formOrButtonElement.disabled = true;
-                    }
-                } else {
-                    loaderElement.classList.remove('show');
-                    if (formOrButtonElement && formOrButtonElement.tagName === 'FORM') {
-                        formOrButtonElement.querySelector('button[type="submit"]').disabled = false;
-                    } else if (formOrButtonElement && formOrButtonElement.tagName === 'BUTTON') {
-                        formOrButtonElement.disabled = false;
-                    }
-                }
-            };
+        const openEditModal = (overlayId, formId, data, handler) => {
+            const overlay = document.getElementById(overlayId);
+            const form = document.getElementById(formId);
+            for (const key in data) { if (form.elements[key]) form.elements[key].value = data[key] || ''; }
+            form.onsubmit = (e) => handler(e, { ID: data.ID });
+            overlay.classList.add('show');
+        };
 
-            // Helper function to format time strings (e.g., "8:15 AM", "14:30")
-            const formatTime = (timeValue) => {
-                try {
-                    let dateObj;
+        const renderAdminList = (container, items, cardRenderer) => {
+            if (!items || items.length === 0) {
+                container.innerHTML = '<p class="no-data-message">No data found.</p>';
+            } else {
+                container.innerHTML = items.map(cardRenderer).join('');
+            }
+        };
 
-                    if (timeValue instanceof Date) {
-                        dateObj = timeValue;
-                    } else if (typeof timeValue === 'string') {
-                        // Attempt to parse as a standard time string ("09:00 AM", "14:30")
-                        dateObj = new Date(`2000/01/01 ${timeValue}`);
+        const applyAdminEventFilters = () => {
+            const type = document.getElementById('adminEventTypeFilter').value.toLowerCase();
+            const subject = document.getElementById('adminEventSubjectFilter').value.toLowerCase().trim();
+            const title = document.getElementById('adminEventTitleFilter').value.toLowerCase().trim();
+            const date = document.getElementById('adminEventDateFilter').value;
+            const filtered = allEventsForAdmin.filter(event => 
+                (!type || event.Type?.toLowerCase() === type) &&
+                (!subject || event.Subject?.toLowerCase().includes(subject)) &&
+                (!title || event.Title?.toLowerCase().includes(title)) &&
+                (!date || event.Date === date)
+            );
+            renderGroupedEvents(filtered);
+        };
 
-                        // If direct parsing failed OR it resulted in an 1899 epoch date (common for Sheets' time values),
-                        // AND it looks like an ISO string, try to extract the time part from the ISO string.
-                        if (isNaN(dateObj.getTime()) || (dateObj.getFullYear() < 1970 && String(timeValue).includes('T') && String(timeValue).includes('Z'))) {
-                            const timePartMatch = String(timeValue).match(/T(\d{2}:\d{2}:\d{2})/); // Extract HH:MM:SS
-                            if (timePartMatch && timePartMatch[1]) {
-                                dateObj = new Date(`2000/01/01 ${timePartMatch[1]}`);
-                            } else {
-                                // Fallback: if it's an ISO string but the above didn't work,
-                                // try parsing the original ISO string as a Date object.
-                                dateObj = new Date(timeValue);
-                            }
-                        }
-                    }
+        const fetchAndRenderAdminEvents = async () => {
+            const container = document.getElementById('manageEventsSection');
+            container.innerHTML = `<h2>Manage Events</h2>
+                <div class="admin-filters">
+                    <select id="adminEventTypeFilter"><option value="">All Types</option><option value="Assignment">Assignment</option><option value="Exam">Exam</option><option value="Notice">Notice</option><option value="Holiday">Holiday</option></select>
+                    <input type="text" id="adminEventSubjectFilter" placeholder="Filter by Subject...">
+                    <input type="text" id="adminEventTitleFilter" placeholder="Filter by Title...">
+                    <input type="date" id="adminEventDateFilter">
+                </div>
+                <div id="admin-events-list-container"><div class="loader show"></div></div>`;
+            container.querySelector('.admin-filters').addEventListener('input', applyAdminEventFilters);
+            try {
+                const res = await fetch(`${WEB_APP_URL}?sheet=Events&secretKey=${SECRET_KEY}&token=${sessionToken}`);
+                allEventsForAdmin = await res.json();
+                renderGroupedEvents(allEventsForAdmin);
+            } catch { container.querySelector('#admin-events-list-container').innerHTML = '<p class="no-data-message">Failed to load events.</p>'; }
+        };
+        
+        const renderGroupedEvents = (events) => {
+            const listContainer = document.getElementById('admin-events-list-container');
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const groups = { today: [], tomorrow: [], thisWeek: [], later: [], past: [] };
+            events.sort((a, b) => new Date(b.Date) - new Date(a.Date))
+                  .forEach(event => {
+                      const eventDate = new Date(event.Date);
+                      if (eventDate < today) groups.past.push(event);
+                      else if (eventDate.getTime() === today.getTime()) groups.today.push(event);
+                      else { groups.later.push(event); }
+                  });
+            
+            let html = '';
+            const createEventCard = event => `<div class="admin-card"><div><h3>${event.Title}</h3><p><strong>Type:</strong> ${event.Type}</p><p><strong>Date:</strong> ${event.Date} at ${robustFormatTime(event.Time)}</p></div><div class="actions"><button class="edit-btn" data-id="${event.ID}">Edit</button><button class="delete-btn" data-id="${event.ID}">Delete</button></div></div>`;
+            
+            if (groups.today.length) html += `<div class="event-group"><h3>Today</h3>${groups.today.map(createEventCard).join('')}</div>`;
+            if (groups.later.length) html += `<div class="event-group"><h3>Upcoming</h3>${groups.later.map(createEventCard).join('')}</div>`;
+            if (groups.past.length) html += `<div class="event-group"><h3>Past Events</h3>${groups.past.map(createEventCard).join('')}</div>`;
+            
+            listContainer.innerHTML = html === '' ? '<p class="no-data-message">No events found for this filter.</p>' : html;
+        };
 
-                    if (isNaN(dateObj.getTime())) {
-                        console.warn("Frontend formatTime: Could not reliably parse time value, returning original:", timeValue);
-                        return String(timeValue); // Fallback to original string
-                    }
+        const fetchAndRenderAdminTimetable = async () => {
+            const container = document.getElementById('manageTimetableSection');
+            container.innerHTML = '<h2>Manage Timetable</h2><div id="admin-timetable-list-container"><div class="loader show"></div></div>';
+            try {
+                const res = await fetch(`${WEB_APP_URL}?sheet=Timetable&secretKey=${SECRET_KEY}&token=${sessionToken}`);
+                allTimetableForAdmin = await res.json();
+                renderAgendaView(allTimetableForAdmin);
+            } catch { container.innerHTML = '<h2>Manage Timetable</h2><p class="no-data-message">Failed to load timetable.</p>'; }
+        };
 
-                    // Use toLocaleTimeString for robust, locale-aware time formatting
-                    return dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+        const renderAgendaView = (data) => {
+            const container = document.getElementById('manageTimetableSection');
+            const dayOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+            const classesByDay = dayOrder.reduce((acc, day) => ({...acc, [day]: []}), {});
+            data.forEach(item => { if (item.Day && classesByDay[item.Day]) classesByDay[item.Day].push(item); });
 
-                } catch (e) {
-                    console.warn("Frontend formatTime: Error during formatting, returning original:", timeValue, e);
-                    return String(timeValue); // Fallback to original string on error
-                }
-            };
+            const today = new Date().toLocaleString('en-us', { weekday: 'long' });
+            const firstDayToShow = dayOrder.includes(today) ? today : (dayOrder.find(d => classesByDay[d].length > 0) || dayOrder[0]);
 
-            // Function to handle login
-            const handleLogin = async (emailOrUsername, password) => {
-                toggleLoader(loginLoader, loginForm, true);
-                loginMessageDiv.style.display = 'none';
-
-                const params = new URLSearchParams();
-                params.append('secretKey', SECRET_KEY);
-                params.append('action', 'login');
-                params.append('emailOrUsername', emailOrUsername);
-                params.append('password', password);
-
-                try {
-                    const response = await fetch(WEB_APP_URL, {
-                        method: 'POST',
-                        body: params
+            let agendaHtml = `<h2>Manage Timetable</h2><div class="day-switcher">${dayOrder.map(d => `<button data-day="${d}" class="${d === firstDayToShow ? 'active' : ''}">${d}</button>`).join('')}</div>`;
+            
+            dayOrder.forEach(day => {
+                const dayClasses = classesByDay[day].sort((a, b) => (a.StartTime || "").localeCompare(b.StartTime));
+                agendaHtml += `<div class="agenda-day-content ${day === firstDayToShow ? 'active' : ''}" id="agenda-${day}">`;
+                if (dayClasses.length > 0) {
+                    dayClasses.forEach(c => {
+                        agendaHtml += `<div class="admin-card"><div><h3>${c.Subject}</h3><p>${robustFormatTime(c.StartTime)} - ${robustFormatTime(c.EndTime)}</p><p>${c.Teacher} &bull; Room ${c.Room}</p></div><div class="actions"><button class="edit-btn" data-id="${c.ID}">Edit</button><button class="delete-btn" data-id="${c.ID}">Delete</button></div></div>`;
                     });
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    const result = await response.json();
-
-                    if (result.status === 'success' && result.token) {
-                        sessionToken = result.token;
-                        localStorage.setItem('adminSessionToken', sessionToken);
-                        showAdminContent();
-                        showMessage(loginMessageDiv, 'Login successful!', 'success');
-                    } else {
-                        showMessage(loginMessageDiv, `Login failed: ${result.message || 'Invalid credentials.'}`, 'error');
-                    }
-                } catch (error) {
-                    console.error('Error during login:', error);
-                    showMessage(loginMessageDiv, `Login failed: ${error.message}`, 'error');
-                } finally {
-                    toggleLoader(loginLoader, loginForm, false);
-                }
-            };
-
-            // Function to handle logout
-            const handleLogout = async () => {
-                const params = new URLSearchParams();
-                params.append('secretKey', SECRET_KEY);
-                params.append('action', 'logout');
-                params.append('token', sessionToken);
-
-                try {
-                    await fetch(WEB_APP_URL, {
-                        method: 'POST',
-                        body: params
-                    });
-                } catch (error) {
-                    console.warn('Error sending logout request to backend:', error);
-                }
-
-                sessionToken = null;
-                localStorage.removeItem('adminSessionToken');
-                showLoginForm();
-                showMessage(loginMessageDiv, 'You have been signed out.', 'success');
-            };
-
-            // Function to show login form and hide admin content
-            const showLoginForm = () => {
-                loginSection.classList.remove('hidden');
-                loginSection.classList.add('visible');
-                adminContent.classList.add('hidden');
-                adminContent.classList.remove('visible');
-                loginForm.reset(); // Clear login form fields
-            };
-
-            // Function to show admin content and hide login form
-            const showAdminContent = () => {
-                loginSection.classList.add('hidden');
-                loginSection.classList.remove('visible');
-                adminContent.classList.remove('hidden');
-                adminContent.classList.add('visible');
-                showSection(eventFormSection); // Default to Add Event form
-            };
-
-            // Function to verify session on page load
-            const verifySession = async () => {
-                if (sessionToken) {
-                    toggleLoader(loginLoader, loginForm, true);
-                    const params = new URLSearchParams();
-                    params.append('secretKey', SECRET_KEY);
-                    params.append('action', 'checkAuth');
-                    params.append('token', sessionToken);
-
-                    try {
-                        const response = await fetch(WEB_APP_URL, {
-                            method: 'POST',
-                            body: params
-                        });
-                        const result = await response.json();
-
-                        if (result.status === 'success' && result.authenticated) {
-                            showAdminContent();
-                        } else {
-                            handleLogout();
-                        }
-                    } catch (error) {
-                        console.error('Session verification failed:', error);
-                        handleLogout();
-                    } finally {
-                        toggleLoader(loginLoader, loginForm, false);
-                    }
-                } else {
-                    showLoginForm();
-                }
-            };
-
-            // Function to fetch events for the admin panel
-            const fetchAndRenderAdminEvents = async () => {
-                toggleLoader(manageEventsLoader, adminEventsList, true);
-                adminEventsList.innerHTML = '<p class="no-events-message">Loading events...</p>';
-                try {
-                    const url = new URL(WEB_APP_URL);
-                    url.searchParams.append('sheet', 'Events');
-                    url.searchParams.append('secretKey', SECRET_KEY);
-                    url.searchParams.append('token', sessionToken);
-
-                    const response = await fetch(url.toString());
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
-                    allEventsForAdmin = data;
-                    applyAdminEventFilters(); // Apply filters after fetching
-                } catch (error) {
-                    console.error('Error fetching events for admin:', error);
-                    adminEventsList.innerHTML = '<p class="no-events-message error">Failed to load events. Please check your Apps Script deployment and sheet name.</p>';
-                } finally {
-                    toggleLoader(manageEventsLoader, adminEventsList, false);
-                }
-            };
-
-            // Function to apply filters and render events for admin panel
-            const applyAdminEventFilters = () => {
-                let filteredEvents = [...allEventsForAdmin];
-
-                const type = adminEventTypeFilter.value.toLowerCase();
-                const subject = adminEventSubjectFilter.value.toLowerCase().trim();
-                const title = adminEventTitleFilter.value.toLowerCase().trim();
-                const date = adminEventDateFilter.value;
-
-                if (type) {
-                    filteredEvents = filteredEvents.filter(event => event.Type && event.Type.toLowerCase() === type);
-                }
-
-                if (subject) {
-                    filteredEvents = filteredEvents.filter(event => event.Subject && event.Subject.toLowerCase().includes(subject));
-                }
-
-                if (title) {
-                    filteredEvents = filteredEvents.filter(event => event.Title && event.Title.toLowerCase().includes(title));
-                }
-
-                if (date) {
-                    filteredEvents = filteredEvents.filter(event => event.Date === date);
-                }
-
-                renderAdminEvents(filteredEvents);
-            };
-
-            // Function to render events in the admin panel
-            const renderAdminEvents = (eventsToRender) => {
-                adminEventsList.innerHTML = '';
-
-                if (eventsToRender.length === 0) {
-                    adminEventsList.innerHTML = '<p class="no-events-message">No events found matching your criteria.</p>';
-                    return;
-                }
-
-                eventsToRender.sort((a, b) => {
-                    const dateTimeA = new Date(`${a.Date} ${a.Time}`);
-                    const dateTimeB = new Date(`${b.Date} ${b.Time}`);
-                    return dateTimeA - dateTimeB;
-                });
-
-                eventsToRender.forEach(event => {
-                    const card = document.createElement('div');
-                    card.className = `admin-event-card ${event.Type ? event.Type.toLowerCase().replace(/\s/g, '-') : ''}`;
-                    card.dataset.id = event.ID;
-
-                    const formattedDate = event.Date ? new Date(event.Date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A';
-                    const formattedTime = event.Time || 'N/A';
-
-                    card.innerHTML = `
-                        <p><strong>Type:</strong> ${event.Type || 'N/A'}</p>
-                        <h3>${event.Title || 'No Title'}</h3>
-                        <p><strong>Subject:</strong> ${event.Subject || 'N/A'}</p>
-                        <p><strong>Date:</strong> ${formattedDate}</p>
-                        <p><strong>Time:</strong> ${formattedTime}</p>
-                        <p><strong>Details:</strong> ${event.Details || 'N/A'}</p>
-                        <div class="actions">
-                            <button class="edit-btn" data-id="${event.ID}">Edit</button>
-                            <button class="delete-btn" data-id="${event.ID}">Delete</button>
-                        </div>
-                    `;
-                    adminEventsList.appendChild(card);
-                });
-            };
-
-            // Function to fetch timetable for the admin panel (New)
-            const fetchAndRenderAdminTimetable = async () => {
-                toggleLoader(manageTimetableLoader, adminTimetableList, true);
-                adminTimetableList.innerHTML = '<p class="no-events-message">Loading timetable...</p>';
-                try {
-                    const url = new URL(WEB_APP_URL);
-                    url.searchParams.append('sheet', 'Timetable');
-                    url.searchParams.append('secretKey', SECRET_KEY);
-                    url.searchParams.append('token', sessionToken);
-
-                    const response = await fetch(url.toString());
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
-                    allTimetableForAdmin = data; // Store fetched timetable
-                    renderAdminTimetable(allTimetableForAdmin);
-                } catch (error) {
-                    console.error('Error fetching timetable for admin:', error);
-                    adminTimetableList.innerHTML = '<p class="no-events-message error">Failed to load timetable. Please check your Apps Script deployment and sheet name.</p>';
-                } finally {
-                    toggleLoader(manageTimetableLoader, adminTimetableList, false);
-                }
-            };
-
-            // Function to render timetable in the admin panel (New) - Now a Table
-            const renderAdminTimetable = (timetableData) => {
-                adminTimetableList.innerHTML = ''; // Clear previous content
-
-                if (timetableData.length === 0) {
-                    adminTimetableList.innerHTML = '<p class="no-events-message">No timetable data available.</p>';
-                    return;
-                }
-
-                const dayOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-                const uniqueTimeSlots = new Set();
-                const classesByTimeAndDay = {}; // Structure: { "HH:MM": { "Day": [class1, class2], ... }, ... }
-
-                timetableData.forEach(item => {
-                    if (item.StartTime) {
-                        const formattedStartTime = formatTime(item.StartTime);
-                        uniqueTimeSlots.add(formattedStartTime);
-                    }
-                    if (item.StartTime && item.Day && dayOrder.includes(item.Day)) {
-                        const formattedStartTime = formatTime(item.StartTime);
-                        if (!classesByTimeAndDay[formattedStartTime]) {
-                            classesByTimeAndDay[formattedStartTime] = {};
-                        }
-                        if (!classesByTimeAndDay[formattedStartTime][item.Day]) {
-                            classesByTimeAndDay[formattedStartTime][item.Day] = [];
-                        }
-                        classesByTimeAndDay[formattedStartTime][item.Day].push(item);
-                    }
-                });
-
-                const sortedTimeSlots = Array.from(uniqueTimeSlots).sort((a, b) => {
-                    const timeA = new Date(`2000/01/01 ${a}`);
-                    const timeB = new Date(`2000/01/01 ${b}`);
-                    return timeA - timeB;
-                });
-
-                const table = document.createElement('table');
-                const thead = document.createElement('thead');
-                const tbody = document.createElement('tbody');
-
-                const headerRow = document.createElement('tr');
-                headerRow.innerHTML = '<th>Time</th>';
-                dayOrder.forEach(day => {
-                    headerRow.innerHTML += `<th>${day}</th>`;
-                });
-                thead.appendChild(headerRow);
-                table.appendChild(thead);
-
-                sortedTimeSlots.forEach(timeSlot => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `<td>${timeSlot}</td>`;
-
-                    dayOrder.forEach(day => {
-                        const cell = document.createElement('td');
-                        const classesInSlot = classesByTimeAndDay[timeSlot] && classesByTimeAndDay[timeSlot][day] ? classesByTimeAndDay[timeSlot][day] : [];
-
-                        if (classesInSlot.length > 0) {
-                            classesInSlot.forEach(classItem => {
-                                const classDiv = document.createElement('div');
-                                classDiv.className = 'admin-table-class-cell';
-                                // Store all data attributes for popup and actions
-                                classDiv.dataset.id = classItem.ID; // Store the ID
-                                classDiv.dataset.day = classItem.Day;
-                                classDiv.dataset.startTime = formatTime(classItem.StartTime);
-                                classDiv.dataset.endTime = formatTime(classItem.EndTime);
-                                classDiv.dataset.subject = classItem.Subject;
-                                classDiv.dataset.teacher = classItem.Teacher;
-                                classDiv.dataset.room = classItem.Room;
-                                classDiv.dataset.effectiveUntilDate = classItem.EffectiveUntilDate || '';
-
-                                classDiv.innerHTML = `<strong>${classItem.Subject}</strong>`;
-                                cell.appendChild(classDiv);
-                            });
-                        } else {
-                            cell.innerHTML = '';
-                        }
-                        row.appendChild(cell);
-                    });
-                    tbody.appendChild(row);
-                });
-                table.appendChild(tbody);
-                adminTimetableList.appendChild(table);
-
-                if (timetableData.length > 0 && table.innerHTML === '<thead><tr><th>Time</th><th>Monday</th><th>Tuesday</th><th>Wednesday</th><th>Thursday</th><th>Friday</th><th>Saturday</th><th>Sunday</th></tr></thead><tbody></tbody>') {
-                     adminTimetableList.innerHTML = '<p class="no-events-message">Timetable data found, but no valid classes were rendered. Ensure "Day", "StartTime", and "EndTime" columns are correctly populated.</p>';
-                }
-            };
-
-
-            // Handle Edit button click for Events
-            adminEventsList.addEventListener('click', (e) => {
-                if (e.target.classList.contains('edit-btn')) {
-                    const eventId = e.target.dataset.id;
-                    const eventToEdit = allEventsForAdmin.find(event => event.ID == eventId);
-                    if (eventToEdit) {
-                        document.getElementById('editEventId').value = eventToEdit.ID || '';
-                        document.getElementById('editEventType').value = eventToEdit.Type || '';
-                        document.getElementById('editEventDate').value = eventToEdit.Date || '';
-                        document.getElementById('editEventTime').value = eventToEdit.Time || '';
-                        document.getElementById('editEventSubject').value = eventToEdit.Subject || '';
-                        document.getElementById('editEventTitle').value = eventToEdit.Title || '';
-                        document.getElementById('editEventDetails').value = eventToEdit.Details || '';
-                        editEventModalOverlay.classList.add('show');
-                    }
-                } else if (e.target.classList.contains('delete-btn')) {
-                    const eventId = e.target.dataset.id;
-                    if (confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
-                        deleteEvent(eventId);
-                    }
-                }
+                } else { agendaHtml += '<p class="no-data-message">No classes scheduled for this day.</p>'; }
+                agendaHtml += `</div>`;
             });
+            container.innerHTML = agendaHtml;
+        };
 
-            // Handle click on timetable cell to show details popup (New)
-            adminTimetableList.addEventListener('click', (event) => {
-                const classCell = event.target.closest('.admin-table-class-cell');
-                if (classCell) {
-                    // Populate the view-only popup
-                    viewPopupSubject.textContent = classCell.dataset.subject;
-                    viewPopupDay.textContent = classCell.dataset.day;
-                    viewPopupTime.textContent = `${classCell.dataset.startTime} - ${classCell.dataset.endTime}`;
-                    viewPopupTeacher.textContent = classCell.dataset.teacher;
-                    viewPopupRoom.textContent = classCell.dataset.room;
-
-                    if (classCell.dataset.effectiveUntilDate && classCell.dataset.effectiveUntilDate !== 'N/A') {
-                        const formattedEffectiveDate = new Date(classCell.dataset.effectiveUntilDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-                        viewPopupEffectiveUntil.textContent = `Effective Until: ${formattedEffectiveDate}`;
-                        viewPopupEffectiveUntil.style.display = 'block';
-                    } else {
-                        viewPopupEffectiveUntil.textContent = '';
-                        viewPopupEffectiveUntil.style.display = 'none';
-                    }
-
-                    // Set data attributes on the popup's action buttons for easy access
-                    viewPopupEditBtn.dataset.id = classCell.dataset.id; // Pass ID
-                    viewPopupDeleteBtn.dataset.id = classCell.dataset.id; // Pass ID
-
-                    viewTimetableDetailsPopupOverlay.classList.add('show');
-                }
-            });
-
-            // Handle Edit button click from the VIEW Timetable Details popup (New)
-            viewPopupEditBtn.addEventListener('click', (e) => {
-                const timetableId = e.target.dataset.id; // Get ID from button
-
-                const entryToEdit = allTimetableForAdmin.find(entry => entry.ID == timetableId);
-
-                if (entryToEdit) {
-                    document.getElementById('editTimetableId').value = entryToEdit.ID || ''; // Set ID in edit form
-                    document.getElementById('editTimetableDay').value = entryToEdit.Day || '';
-                    document.getElementById('editTimetableStartTime').value = entryToEdit.StartTime || '';
-                    document.getElementById('editTimetableEndTime').value = entryToEdit.EndTime || '';
-                    document.getElementById('editTimetableSubject').value = entryToEdit.Subject || '';
-                    document.getElementById('editTimetableTeacher').value = entryToEdit.Teacher || '';
-                    document.getElementById('editTimetableRoom').value = entryToEdit.Room || '';
-                    document.getElementById('editTimetableEffectiveUntilDate').value = entryToEdit.EffectiveUntilDate || '';
-
-                    viewTimetableDetailsPopupOverlay.classList.remove('show'); // Close view popup
-                    editTimetableModalOverlay.classList.add('show'); // Open edit modal
-                }
-            });
-
-            // Handle Delete button click from the VIEW Timetable Details popup (New)
-            viewPopupDeleteBtn.addEventListener('click', (e) => {
-                const timetableId = e.target.dataset.id; // Get ID from button
-                if (confirm('Are you sure you want to delete this timetable entry? This action cannot be undone.')) {
-                    viewTimetableDetailsPopupOverlay.classList.remove('show'); // Close view popup before deleting
-                    deleteTimetableEntry(timetableId); // Pass ID to delete function
-                }
-            });
-
-
-            // Close edit event modal
-            editEventModalCloseBtn.addEventListener('click', () => {
-                editEventModalOverlay.classList.remove('show');
-                editEventMessageDiv.style.display = 'none'; // Clear message on close
-            });
-            editEventModalOverlay.addEventListener('click', (e) => {
-                if (e.target === editEventModalOverlay) {
-                    editEventModalOverlay.classList.remove('show');
-                    editEventMessageDiv.style.display = 'none'; // Clear message on close
-                }
-            });
-
-            // Close edit timetable modal (New)
-            editTimetableModalCloseBtn.addEventListener('click', () => {
-                editTimetableModalOverlay.classList.remove('show');
-                editTimetableMessageDiv.style.display = 'none';
-            });
-            editTimetableModalOverlay.addEventListener('click', (e) => {
-                if (e.target === editTimetableModalOverlay) {
-                    editTimetableModalOverlay.classList.remove('show');
-                    editTimetableMessageDiv.style.display = 'none';
-                }
-            });
-
-            // Close view timetable details popup (New)
-            viewPopupCloseBtn.addEventListener('click', () => {
-                viewTimetableDetailsPopupOverlay.classList.remove('show');
-            });
-            viewTimetableDetailsPopupOverlay.addEventListener('click', (e) => {
-                if (e.target === viewTimetableDetailsPopupOverlay) {
-                    viewTimetableDetailsPopupOverlay.classList.remove('show');
-                }
-            });
-
-
-            // Handle Edit Event Form submission
-            editEventForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                toggleLoader(editEventLoader, editEventForm, true);
-                editEventMessageDiv.style.display = 'none';
-
-                const formData = new FormData(editEventForm);
-                const params = new URLSearchParams();
-                params.append('secretKey', SECRET_KEY);
-                params.append('token', sessionToken);
-                params.append('sheet', 'Events');
-                params.append('action', 'update');
-
-                for (let [key, value] of formData.entries()) {
-                    params.append(key, value);
-                }
-
-                try {
-                    const response = await fetch(WEB_APP_URL, {
-                        method: 'POST',
-                        body: params
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    const result = await response.json();
-
-                    if (result.status === 'success') {
-                        showMessage(editEventMessageDiv, result.message, 'success');
-                        editEventModalOverlay.classList.remove('show');
-                        await fetchAndRenderAdminEvents();
-                    } else {
-                        showMessage(editEventMessageDiv, `Error: ${result.message}`, 'error');
-                    }
-                } catch (error) {
-                    console.error('Error updating event:', error);
-                    showMessage(editEventMessageDiv, `Failed to update event: ${error.message}`, 'error');
-                } finally {
-                    toggleLoader(editEventLoader, editEventForm, false);
-                }
-            });
-
-            // Handle Edit Timetable Form submission (New)
-            editTimetableForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                toggleLoader(editTimetableLoader, editTimetableForm, true);
-                editTimetableMessageDiv.style.display = 'none';
-
-                const formData = new FormData(editTimetableForm);
-                const params = new URLSearchParams();
-                params.append('secretKey', SECRET_KEY);
-                params.append('token', sessionToken);
-                params.append('sheet', 'Timetable');
-                params.append('action', 'update'); // Action for updating timetable
-
-                // Append the ID for finding the row to update
-                params.append('ID', document.getElementById('editTimetableId').value);
-
-
-                for (let [key, value] of formData.entries()) {
-                    params.append(key, value);
-                }
-
-                try {
-                    const response = await fetch(WEB_APP_URL, {
-                        method: 'POST',
-                        body: params
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    const result = await response.json();
-
-                    if (result.status === 'success') {
-                        showMessage(editTimetableMessageDiv, result.message, 'success');
-                        editTimetableModalOverlay.classList.remove('show');
-                        await fetchAndRenderAdminTimetable(); // Re-fetch and re-render timetable
-                    } else {
-                        showMessage(editTimetableMessageDiv, `Error: ${result.message}`, 'error');
-                    }
-                } catch (error) {
-                    console.error('Error updating timetable entry:', error);
-                    showMessage(editTimetableMessageDiv, `Failed to update timetable entry: ${error.message}`, 'error');
-                } finally {
-                    toggleLoader(editTimetableLoader, editTimetableForm, false);
-                }
-            });
-
-
-            // Handle Delete Event
-            const deleteEvent = async (eventId) => {
-                toggleLoader(manageEventsLoader, adminEventsList, true);
-                try {
-                    const params = new URLSearchParams();
-                    params.append('secretKey', SECRET_KEY);
-                    params.append('token', sessionToken);
-                    params.append('sheet', 'Events');
-                    params.append('action', 'delete');
-                    params.append('ID', eventId);
-
-                    const response = await fetch(WEB_APP_URL, {
-                        method: 'POST',
-                        body: params
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    const result = await response.json();
-
-                    if (result.status === 'success') {
-                        showMessage(eventMessageDiv, result.message, 'success');
-                        await fetchAndRenderAdminEvents();
-                    } else {
-                        showMessage(eventMessageDiv, `Error: ${result.message}`, 'error');
-                    }
-                } catch (error) {
-                    console.error('Error deleting event:', error);
-                    showMessage(eventMessageDiv, `Failed to delete event: ${error.message}`, 'error');
-                } finally {
-                    toggleLoader(manageEventsLoader, adminEventsList, false);
-                }
-            };
-
-            // Handle Delete Timetable Entry (New)
-            const deleteTimetableEntry = async (timetableId) => { // Now takes ID
-                toggleLoader(manageTimetableLoader, adminTimetableList, true);
-                try {
-                    const params = new URLSearchParams();
-                    params.append('secretKey', SECRET_KEY);
-                    params.append('token', sessionToken);
-                    params.append('sheet', 'Timetable');
-                    params.append('action', 'delete');
-                    params.append('ID', timetableId); // Pass ID
-
-                    const response = await fetch(WEB_APP_URL, {
-                        method: 'POST',
-                        body: params
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    const result = await response.json();
-
-                    if (result.status === 'success') {
-                        showMessage(timetableMessageDiv, result.message, 'success');
-                        await fetchAndRenderAdminTimetable();
-                    } else {
-                        showMessage(timetableMessageDiv, `Error: ${result.message}`, 'error');
-                    }
-                } catch (error) {
-                    console.error('Error deleting timetable entry:', error);
-                    showMessage(timetableMessageDiv, `Failed to delete timetable entry: ${error.message}`, 'error');
-                } finally {
-                    toggleLoader(manageTimetableLoader, adminTimetableList, false);
-                }
-            };
-
-
-            // Event form submission handler (existing)
-            eventForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                toggleLoader(eventLoader, eventForm, true);
-                eventMessageDiv.style.display = 'none';
-
-                const formData = new FormData(eventForm);
-                const params = new URLSearchParams();
-                params.append('secretKey', SECRET_KEY);
-                params.append('token', sessionToken);
-                params.append('sheet', 'Events');
-                params.append('action', 'add');
-
-                for (let [key, value] of formData.entries()) {
-                    params.append(key, value);
-                }
-
-                try {
-                    const response = await fetch(WEB_APP_URL, {
-                        method: 'POST',
-                        body: params
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    const result = await response.json();
-
-                    if (result.status === 'success') {
-                        showMessage(eventMessageDiv, result.message, 'success');
-                        eventForm.reset();
-                        if (manageEventsSection.classList.contains('visible')) {
-                            await fetchAndRenderAdminEvents();
-                        }
-                    } else {
-                        showMessage(eventMessageDiv, `Error: ${result.message}`, 'error');
-                    }
-                } catch (error) {
-                    console.error('Error adding event:', error);
-                    showMessage(eventMessageDiv, `Failed to add event: ${error.message}`, 'error');
-                } finally {
-                    toggleLoader(eventLoader, eventForm, false);
-                }
-            });
-
-            // Timetable form submission handler (existing)
-            timetableForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                toggleLoader(timetableLoader, timetableForm, true);
-                timetableMessageDiv.style.display = 'none';
-
-                const formData = new FormData(timetableForm);
-                const params = new URLSearchParams();
-                params.append('secretKey', SECRET_KEY);
-                params.append('token', sessionToken);
-                params.append('sheet', 'Timetable');
-                params.append('action', 'add'); // Still 'add' for now, backend will handle update if key matches
-
-                for (let [key, value] of formData.entries()) {
-                    params.append(key, value);
-                }
-
-                try {
-                    const response = await fetch(WEB_APP_URL, {
-                        method: 'POST',
-                        body: params
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    const result = await response.json();
-
-                    if (result.status === 'success') {
-                        showMessage(timetableMessageDiv, result.message, 'success');
-                        timetableForm.reset();
-                        if (manageTimetableSection.classList.contains('visible')) { // Refresh if on manage timetable tab
-                            await fetchAndRenderAdminTimetable();
-                        }
-                    } else {
-                        showMessage(timetableMessageDiv, `Error: ${result.message}`, 'error');
-                    }
-                } catch (error) {
-                    console.error('Error adding/updating timetable entry:', error);
-                    showMessage(timetableMessageDiv, `Failed to add/update timetable entry: ${error.message}`, 'error');
-                } finally {
-                    toggleLoader(timetableLoader, timetableForm, false);
-                }
-            });
-
-
-            // Add event listeners for view switcher buttons
-            showEventFormBtn.addEventListener('click', () => showSection(eventFormSection));
-            showTimetableFormBtn.addEventListener('click', () => showSection(timetableFormSection));
-            showManageEventsBtn.addEventListener('click', () => showSection(manageEventsSection));
-            showManageTimetableBtn.addEventListener('click', () => showSection(manageTimetableSection)); // New listener
-
-            // Add event listeners for admin event filters
-            adminEventTypeFilter.addEventListener('change', applyAdminEventFilters);
-            adminEventSubjectFilter.addEventListener('input', applyAdminEventFilters);
-            adminEventTitleFilter.addEventListener('input', applyAdminEventFilters);
-            adminEventDateFilter.addEventListener('change', applyAdminEventFilters);
-
-
-            // Login form submission
-            loginForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const emailOrUsername = document.getElementById('adminEmailOrUsername').value;
-                const password = document.getElementById('adminPassword').value;
-                handleLogin(emailOrUsername, password);
-            });
-
-            // Sign out button click
-            signOutBtn.addEventListener('click', handleLogout);
-
-            // Initial check for session on page load
-            verifySession();
+        // --- Event Listeners ---
+        viewSwitcherBtns.forEach(btn => btn.addEventListener('click', () => showSection(btn.dataset.target)));
+        loginForm.addEventListener('submit', handleLogin);
+        signOutBtn.addEventListener('click', handleLogout);
+        document.addEventListener('click', (e) => {
+            if (e.target.matches('.modal-overlay, .close-btn')) e.target.closest('.modal-overlay').classList.remove('show');
+            if (e.target.matches('#manageEventsSection .edit-btn')) {
+                const item = allEventsForAdmin.find(i => i.ID == e.target.dataset.id);
+                if (item) openEditModal('editEventModalOverlay', 'editEventForm', item, (ev, data) => handleFormSubmit(ev, 'Events', 'update', data));
+            }
+            if (e.target.matches('#manageTimetableSection .edit-btn')) {
+                const item = allTimetableForAdmin.find(i => i.ID == e.target.dataset.id);
+                if (item) openEditModal('editTimetableModalOverlay', 'editTimetableForm', item, (ev, data) => handleFormSubmit(ev, 'Timetable', 'update', data));
+            }
+            if (e.target.matches('#manageEventsSection .delete-btn')) handleDelete('Events', e.target.dataset.id);
+            if (e.target.matches('#manageTimetableSection .delete-btn')) handleDelete('Timetable', e.target.dataset.id);
+            
+            // Updated day switcher logic
+            if (e.target.matches('.day-switcher button')) {
+                document.querySelector('.day-switcher button.active')?.classList.remove('active');
+                e.target.classList.add('active');
+                document.querySelector('.agenda-day-content.active')?.classList.remove('active');
+                document.getElementById(`agenda-${e.target.dataset.day}`)?.classList.add('active');
+            }
         });
+        
+        // --- Initial Load & Form Setup ---
+        verifySession();
+        const eventFormHTML = `<h2>Add New Event</h2><form class="admin-form"><label>Event Type</label><select name="Type" required><option value="">Select Type</option><option value="Assignment">Assignment</option><option value="Exam">Exam</option><option value="Notice">Notice</option><option value="Holiday">Holiday</option></select><label>Date</label><input type="date" name="Date" required><label>Time</label><input type="time" name="Time"><label>Subject</label><input type="text" name="Subject" required><label>Title</label><input type="text" name="Title" required><label>Details</label><textarea name="Details" rows="3"></textarea><button type="submit">Add Event</button><div class="message"></div></form>`;
+        const timetableFormHTML = `<h2>Add Timetable Entry</h2><form class="admin-form"><label>Day</label><select name="Day" required><option value="">Select Day</option><option value="Monday">Monday</option><option value="Tuesday">Tuesday</option><option value="Wednesday">Wednesday</option><option value="Thursday">Thursday</option><option value="Friday">Friday</option><option value="Saturday">Saturday</option><option value="Sunday">Sunday</option></select><label>Start Time</label><input type="time" name="StartTime" required><label>End Time</label><input type="time" name="EndTime" required><label>Subject</label><input type="text" name="Subject" required><label>Teacher</label><input type="text" name="Teacher" required><label>Room</label><input type="text" name="Room" required><label>Effective Until (Optional)</label><input type="date" name="EffectiveUntilDate"><button type="submit">Add Entry</button><div class="message"></div></form>`;
+        document.getElementById('eventFormSection').innerHTML = eventFormHTML; document.getElementById('eventFormSection').querySelector('form').onsubmit = (e) => handleFormSubmit(e, 'Events', 'add');
+        document.getElementById('timetableFormSection').innerHTML = timetableFormHTML; document.getElementById('timetableFormSection').querySelector('form').onsubmit = (e) => handleFormSubmit(e, 'Timetable', 'addTimetable');
+        document.getElementById('editEventForm').innerHTML = eventFormHTML.replace('<h2>Add New Event</h2>', '').replace('Add Event', 'Save Changes');
+        document.getElementById('editTimetableForm').innerHTML = timetableFormHTML.replace('<h2>Add Timetable Entry</h2>', '').replace('Add Entry', 'Save Changes');
+    });
     </script>
 </body>
 </html>
