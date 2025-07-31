@@ -212,7 +212,7 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', async () => {
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbztJs-3nqRRaxzJG-Buw2CbY5Gqm2_hj_xDf5xhUQ2ebrV2eANFVUzfXHehQEiQ_wZAGQ/exec';
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxGqXnD92jAI08s7BMsHxFd9UJIW8h1viUfkg0sAdFJAsHdnTyx0C59K_be-P2tU7mQtA/exec';
         const SECRET_KEY = 'your_secret_key_here';
 
         let allTimetable = [];
@@ -450,6 +450,29 @@
             popupOverlay.classList.add('show');
         };
 
+        // --- FIXED: Function to handle deep linking from notifications ---
+        const checkUrlFragmentAndScroll = () => {
+            const hash = window.location.hash;
+            if (hash.startsWith('#event-')) {
+                showSection('events-section');
+                setTimeout(() => {
+                    const targetElement = document.getElementById(hash.substring(1));
+                    if (targetElement) {
+                        targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        // Add a temporary highlight effect
+                        targetElement.style.transition = 'box-shadow 0.5s ease-in-out';
+                        targetElement.style.boxShadow = '0 0 0 4px var(--secondary-accent)';
+                        setTimeout(() => {
+                            targetElement.style.boxShadow = '';
+                        }, 2500);
+                    }
+                }, 100); // Small delay to ensure the section is visible
+            } else {
+                // Default to timetable if no specific hash is present
+                showSection('timetable-section');
+            }
+        };
+
         // --- Event Listeners ---
         document.getElementById('showTimetableBtn').addEventListener('click', () => showSection('timetable-section'));
         document.getElementById('showEventsBtn').addEventListener('click', () => showSection('events-section'));
@@ -474,14 +497,15 @@
         filtersContainer.innerHTML = `<div><select id="eventType"><option value="">All Types</option><option value="Assignment">Assignment</option><option value="Exam">Exam</option><option value="Notice">Notice</option><option value="Holiday">Holiday</option></select></div><div><input type="text" id="eventSubject" placeholder="Filter by Subject..."></div><div><input type="text" id="eventTitleFilter" placeholder="Filter by Title..."></div><div><input type="date" id="eventDate"></div>`;
         filtersContainer.addEventListener('input', applyFilters);
         
-        // --- Initial Load ---
+        // --- FIXED: Initial Load Logic ---
         (async () => {
             showLoader();
             try {
                 [allTimetable, allEvents] = await Promise.all([fetchData('Timetable'), fetchData('Events')]);
                 renderTimetable(allTimetable);
                 renderEvents(allEvents);
-                showSection('timetable-section');
+                // The check function now handles which section to show on load
+                checkUrlFragmentAndScroll();
             } catch (error) {
                 console.error("Failed during initial data processing:", error);
                 timetableSection.innerHTML = '<p class="no-data-message">Failed to load data. Check console for details.</p>';
