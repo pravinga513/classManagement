@@ -1,1165 +1,496 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<link href='https://raw.githubusercontent.com/pravinga513/classManagement/main/manifest.json' rel='manifest'/>
-    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-<script>
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) {
-    await OneSignal.init({
-      appId: "50801439-7868-4cae-a262-018829ad2bc1",
-    });
-  });
-</script>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Class Timetable & Event Reminder</title>
-    <style>
-        /* --- style.css content starts here --- */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0; /* Remove default body padding to allow header/footer to span full width */
-            background-color: #f4f7f6;
-            color: #333;
-            line-height: 1.6;
-            display: flex; /* Use flexbox for overall layout */
-            flex-direction: column; /* Stack header, main content, footer vertically */
-            min-height: 100vh; /* Ensure body takes at least full viewport height */
-        }
 
-        /* Header Styles */
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- OneSignal SDK -->
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
+          appId: "50801439-7868-4cae-a262-018829ad2bc1", // <-- REPLACE WITH YOUR ONESIGNAL APP ID
+        });
+      });
+    </script>
+
+    <style>
+        :root {
+            --bg-dark: #1a1a2e;
+            --bg-card: #16213e;
+            --primary-accent: #0f3460;
+            --secondary-accent: #e94560;
+            --text-primary: #ffffff;
+            --text-secondary: #a7a9be;
+            --border-color: #3d4a6c;
+            --border-radius: 12px;
+            --font-sans: 'Inter', sans-serif;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
         .header {
-            background-color: #2c3e50;
-            color: white;
-            padding: 15px 20px;
+            background-color: var(--bg-card);
+            padding: 1rem 1.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
-            margin-bottom: 20px;
-            flex-shrink: 0;
+            border-bottom: 1px solid var(--border-color);
         }
-
-        .header .logo {
-            font-size: 1.8em;
-            font-weight: bold;
-            text-decoration: none;
-            color: white;
-        }
-
-        .header .nav-link {
-            color: white;
-            text-decoration: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
-        }
-
-        .header .nav-link:hover {
-            background-color: #34495e;
-        }
-
+        .header .logo { font-size: 1.5em; font-weight: 700; text-decoration: none; color: var(--text-primary); }
+        .header .nav-link { color: var(--text-secondary); text-decoration: none; padding: 0.5em 1em; border-radius: var(--border-radius); transition: all 0.3s ease; }
+        .header .nav-link:hover { background-color: var(--primary-accent); color: var(--text-primary); }
         .container {
+            width: 100%;
             max-width: 1200px;
-            margin: 0 auto; /* Center the main content area */
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin: 1.5rem auto;
+            padding: 0 1.5rem;
             flex-grow: 1;
-            width: calc(100% - 40px); /* Account for body padding if it were present, or ensure it fits */
-            box-sizing: border-box;
         }
-
-        h1, h2 {
-            color: #2c3e50;
-            text-align: center;
-            margin-bottom: 25px;
-        }
-
-        /* View Switcher */
+        h1 { font-size: clamp(2rem, 5vw, 2.5rem); font-weight: 700; margin-bottom: 1.5rem; text-align: center; }
+        h2 { font-size: clamp(1.5rem, 4vw, 2rem); color: var(--text-secondary); font-weight: 700; margin-bottom: 1.5rem; text-align: center; }
         .view-switcher {
             display: flex;
             justify-content: center;
-            margin-bottom: 30px;
-            gap: 10px;
-        }
-
-        .view-switcher button {
-            padding: 12px 25px;
-            font-size: 1.1em;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            background-color: #e0e0e0;
-            color: #555;
-            transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .view-switcher button:hover {
-            background-color: #d0d0d0;
-            transform: translateY(-2px);
-        }
-
-        .view-switcher button.active {
-            background-color: #3498db;
-            color: white;
-            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
-        }
-
-        /* Filters */
-        .filters {
-            display: flex;
+            margin-bottom: 2rem;
+            background-color: var(--primary-accent);
+            border-radius: var(--border-radius);
+            padding: 0.5rem;
             flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 30px;
-            padding: 20px;
-            background-color: #e8f0fe;
-            border-radius: 8px;
-            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease-in-out;
         }
-
-        .filters.hidden {
-            display: none;
-            opacity: 0;
-            height: 0;
-            overflow: hidden;
-            padding: 0 20px; /* Adjust padding for hidden state */
-            margin-bottom: 0; /* Adjust margin for hidden state */
+        .view-switcher button {
+            flex: 1; padding: 12px 20px; font-size: 1em; font-weight: 600;
+            border: none; border-radius: 8px; cursor: pointer;
+            background-color: transparent; color: var(--text-secondary); transition: all 0.3s ease;
         }
+        .view-switcher button.active { background-color: var(--bg-card); color: var(--text-primary); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .content-section { display: none; }
+        .content-section.visible { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .filters.visible {
-            display: flex; /* Or block, grid, etc., depending on final layout */
-            opacity: 1;
-            height: auto; /* Allow content to dictate height */
-            padding: 20px;
-            margin-bottom: 30px;
+        /* --- AGENDA VIEW (Version 1) --- */
+        .agenda-view { display: flex; flex-direction: column; gap: 1.5rem; }
+        .day-switcher {
+            display: flex; overflow-x: auto; gap: 0.5rem; padding-bottom: 1rem;
+            -ms-overflow-style: none; scrollbar-width: none;
         }
-
-
-        .filters label {
-            font-weight: bold;
-            color: #34495e;
+        .day-switcher::-webkit-scrollbar { display: none; }
+        .day-switcher button {
+            flex-shrink: 0; padding: 10px 20px; font-size: 1em; font-weight: 600;
+            border: 1px solid var(--border-color); border-radius: 50px; cursor: pointer;
+            background-color: var(--primary-accent); color: var(--text-secondary); transition: all 0.3s ease;
         }
-
-        .filters select,
-        .filters input[type="text"],
-        .filters input[type="date"] {
-            padding: 10px 12px;
-            border: 1px solid #cce7ff;
-            border-radius: 5px;
-            font-size: 1rem;
-            color: #555;
-            background-color: #f8faff;
-            transition: border-color 0.3s ease;
-        }
-
-        .filters select:focus,
-        .filters input[type="text"]:focus,
-        .filters input[type="date"]:focus {
-            border-color: #6daff7;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(109, 175, 247, 0.2);
-        }
-
-        /* Loader Styles */
-        .loader {
-            border: 8px solid #f3f3f3;
-            border-top: 8px solid #3498db;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            animation: spin 2s linear infinite;
-            margin: 50px auto;
-            display: none; /* Hidden by default */
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .loader.show {
-            display: block;
-        }
-
-        /* Content Sections */
-        .content-section {
-            transition: all 0.5s ease-in-out;
-            padding-top: 20px; /* Give some space when visible */
-        }
-
-        .content-section.hidden {
-            display: none;
-            opacity: 0;
-            max-height: 0;
-            overflow: hidden;
-            padding-top: 0;
-        }
-
-        .content-section.visible {
-            display: block;
-            opacity: 1;
-            height: auto; /* Ensure it takes necessary height */
-        }
-
-
-        /* Timetable Grid - Now a Table */
-        #timetable-grid {
-            margin-bottom: 40px;
-            padding: 20px;
-            background-color: #f7fcfb;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            overflow-x: auto; /* Enable horizontal scrolling on small screens */
-        }
-
-        #timetable-grid table {
-            width: 100%;
-            border-collapse: collapse;
-            /* min-width: 700px; Removed for better mobile responsiveness */
-        }
-
-        #timetable-grid th,
-        #timetable-grid td {
-            border: 1px solid #e0e0e0;
-            padding: 12px 8px;
-            text-align: center;
-            vertical-align: top;
-            min-width: 100px; /* Minimum width for cells on larger screens */
-        }
-
-        #timetable-grid th {
-            background-color: #3498db;
-            color: white;
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 0.9em;
-            padding: 15px 8px;
-        }
-
-        #timetable-grid td {
-            background-color: #ffffff;
-            font-size: 0.9em;
-            color: #555;
-            height: 80px; /* Fixed height for time slots */
-        }
-
-        #timetable-grid td:first-child { /* Time column */
-            background-color: #e8f0fe;
-            font-weight: bold;
-            color: #2c3e50;
-            min-width: 90px; /* Keep time column a bit wider on larger screens */
-        }
-
-        .table-class-cell {
-            background-color: #e0f2f7; /* Light blue for class cells */
-            border-left: 4px solid #2196f3; /* Blue accent */
-            border-radius: 5px;
-            padding: 8px;
-            margin: 2px; /* Small margin around the class block */
-            height: 100%; /* Fill available space */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-            transition: transform 0.1s ease;
-            cursor: pointer; /* Indicate clickability */
-        }
-
-        .table-class-cell:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .table-class-cell strong {
-            display: block;
-            font-size: 1em;
-            color: #0d47a1;
-            margin-bottom: 3px;
-        }
-
-        /* Tooltip/Popup Styles */
-        .class-details-popup-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease;
-        }
-
-        .class-details-popup-overlay.show {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .class-details-popup {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            position: relative;
-            max-width: 400px;
-            width: 90%;
-            text-align: left;
-            transform: scale(0.9);
-            transition: transform 0.3s ease;
-        }
-
-        .class-details-popup-overlay.show .class-details-popup {
-            transform: scale(1);
-        }
-
-        .class-details-popup h3 {
-            margin-top: 0;
-            color: #2c3e50;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-        }
-
-        .class-details-popup p {
-            margin: 8px 0;
-            color: #555;
-            font-size: 1.05em;
-        }
-
-        .class-details-popup p strong {
-            color: #34495e;
-            display: inline-block;
-            min-width: 80px;
-        }
-
-        .class-details-popup .close-btn {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 24px;
-            cursor: pointer;
-            color: #888;
-            background: none;
-            border: none;
-            line-height: 1;
-            padding: 5px;
-            transition: color 0.2s ease;
-        }
-
-        .class-details-popup .close-btn:hover {
-            color: #333;
-        }
-
-        /* Events List */
-        #events-list {
+        .day-switcher button.active { background-color: var(--secondary-accent); color: var(--text-primary); border-color: var(--secondary-accent); }
+        
+        .agenda-day-content { display: none; }
+        .agenda-day-content.active { display: block; animation: fadeIn 0.4s; }
+        
+        .agenda-class-card {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            padding: 20px;
-            background-color: #fdfdfd;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-
-        .event-card {
-            background-color: #ffffff;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between; /* Pushes time-left to bottom */
-        }
-
-        .event-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-        }
-
-        .event-card.assignment { border-left: 5px solid #ff9800; } /* Orange */
-        .event-card.exam { border-left: 5px solid #f44336; }      /* Red */
-        .event-card.notice { border-left: 5px solid #4caf50; }    /* Green */
-        .event-card.holiday { border-left: 5px solid #9c27b0; }    /* Purple */
-        /* Add more colors for different event types */
-
-        .event-card h3 {
-            margin-top: 0;
-            margin-bottom: 10px;
-            color: #333;
-            font-size: 1.3em;
-        }
-
-        .event-card p {
-            margin: 5px 0;
-            font-size: 1em;
-            color: #555;
-        }
-
-        .event-card .type {
-            font-weight: bold;
-            color: #666;
-            text-transform: uppercase;
-            font-size: 0.85em;
-            margin-bottom: 8px;
-        }
-
-        .event-card .date-time { /* Combined date and time display */
-            font-weight: bold;
-            color: #1a73e8;
-            margin-top: 5px;
-        }
-
-        .event-card .time-left {
-            font-size: 1.1em;
-            font-weight: bold;
-            color: #d32f2f; /* Red for urgent */
-            margin-top: auto; /* Push to bottom */
-            padding-top: 10px;
-            border-top: 1px solid #eee;
-            text-align: right;
-        }
-
-        .event-card .time-left.soon {
-            color: #fb8c00; /* Orange for soon */
-        }
-
-        .event-card .time-left.overdue {
-            color: #b71c1c; /* Darker red for overdue */
-            font-style: italic;
-        }
-
-        /* Highlight for scrolled-to event */
-        .highlight-card {
-            box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.5), 0 4px 12px rgba(0, 0, 0, 0.12); /* Blue glow */
-            animation: pulse-highlight 1.5s ease-out;
-        }
-
-        @keyframes pulse-highlight {
-            0% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.5), 0 4px 12px rgba(0, 0, 0, 0.12); }
-            50% { box-shadow: 0 0 0 8px rgba(52, 152, 219, 0.8), 0 4px 12px rgba(0, 0, 0, 0.12); }
-            100% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.5), 0 4px 12px rgba(0, 0, 0, 0.12); }
-        }
-
-
-        .no-events-message {
-            text-align: center;
-            grid-column: 1 / -1; /* Span across all columns in the grid */
-            padding: 30px;
-            font-size: 1.2em;
-            color: #777;
-            background-color: #f0f0f0;
-            border-radius: 8px;
-            margin-top: 20px;
-        }
-
-        /* Admin Form Styles - Included for completeness but not used in this single file */
-        .event-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            max-width: 600px;
-            margin: 30px auto;
-            padding: 30px;
-            background-color: #f9f9f9;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-        }
-
-        .event-form label {
-            font-weight: bold;
-            color: #34495e;
-            margin-bottom: 5px;
-        }
-
-        .event-form input[type="text"],
-        .event-form input[type="date"],
-        .event-form select,
-        .event-form textarea {
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 1rem;
-            color: #555;
-            background-color: #fff;
-            width: 100%;
-            box-sizing: border-box; /* Include padding in element's total width and height */
-        }
-
-        .event-form input[type="text"]:focus,
-        .event-form input[type="date"]:focus,
-        .event-form select:focus,
-        .event-form textarea:focus {
-            border-color: #3498db;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-        }
-
-        .event-form button {
-            padding: 12px 25px;
-            background-color: #28a745; /* Green for add button */
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 1.1em;
+            grid-template-columns: 100px 1fr;
+            align-items: center;
+            gap: 1.5rem;
+            background-color: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            border-left: 5px solid var(--primary-accent);
+            margin-bottom: 1rem;
             cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            margin-top: 15px;
+            transition: all 0.3s ease;
         }
-
-        .event-form button:hover {
-            background-color: #218838;
-            transform: translateY(-2px);
+        .agenda-class-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            border-left-color: var(--secondary-accent);
         }
-
-        .message {
-            margin-top: 20px;
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
-            font-weight: bold;
+        .agenda-class-card.is-current {
+            border-left-color: var(--secondary-accent);
+            box-shadow: 0 0 25px rgba(233, 69, 96, 0.3);
         }
+        .class-time { text-align: center; }
+        .class-time .start-time { font-size: 1.2em; font-weight: 700; display: block; }
+        .class-time .end-time { font-size: 0.9em; color: var(--text-secondary); }
+        
+        .class-details h3 { font-size: 1.4em; margin: 0 0 0.25rem; color: var(--text-primary); }
+        .class-details p { margin: 0; color: var(--text-secondary); font-size: 0.95em; }
 
-        .message.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+        /* --- FILTERS & EVENTS (Compact & Grouped) --- */
+        .filters {
+            display: none;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 1rem 1.5rem;
+            background-color: var(--bg-card);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
         }
-
-        .message.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+        .filters.visible { display: flex; }
+        .filters > div { flex: 1 1 200px; }
+        .filters select, .filters input {
+            width: 100%; padding: 10px; border: 1px solid var(--border-color);
+            border-radius: 8px; font-size: 0.9rem; color: var(--text-primary);
+            background-color: var(--primary-accent);
         }
-
-        /* Footer Styles */
-        .footer {
-            background-color: #2c3e50;
-            color: white;
-            text-align: center;
-            padding: 20px;
-            margin-top: 40px;
-            flex-shrink: 0;
+        
+        .event-group h3 {
+            color: var(--secondary-accent);
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
         }
+        #events-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
+        .event-card { background-color: var(--bg-card); border-radius: var(--border-radius); padding: 1.5rem; border-left: 5px solid; transition: all 0.3s ease; }
+        .event-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+        .event-card.assignment { border-color: #ff9800; } .event-card.exam { border-color: #f44336; } .event-card.notice { border-color: #4caf50; } .event-card.holiday { border-color: #9c27b0; }
+        .event-card h4 { margin: 0.5rem 0; font-size: 1.4em; } .event-card p { margin: 4px 0; color: var(--text-secondary); }
+        .event-card .time-left { font-size: 1.1em; font-weight: 700; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color); text-align: right; }
+        .event-card .time-left.overdue { color: #f44336; }
+        .event-card .time-left.soon { color: #ff9800; }
+        .event-card .time-left:not(.overdue):not(.soon) { color: var(--text-primary); }
 
-        .footer p {
-            margin: 0;
-            font-size: 0.9em;
-        }
-
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
-                gap: 10px;
-            }
-            .header .logo {
-                margin-bottom: 10px;
-            }
-            .filters {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .view-switcher button {
-                flex: 1; /* Make buttons take equal width */
-            }
-
-            #timetable-grid table {
-                min-width: unset; /* Allow table to shrink on small screens */
-            }
-            #timetable-grid th,
-            #timetable-grid td {
-                min-width: unset; /* Allow cells to shrink */
-                padding: 8px 4px; /* Reduced padding */
-            }
-            #timetable-grid td:first-child {
-                min-width: 60px; /* Keep time column a bit wider */
-            }
-            .table-class-cell {
-                padding: 5px; /* Reduced padding for class cells */
-            }
-            .table-class-cell strong {
-                font-size: 0.9em;
-            }
-            .table-class-cell span {
-                /* Removed this for smaller screens when only subject is shown */
-                display: none;
-            }
-            .container {
-                padding: 15px; /* Adjust padding for smaller screens */
-                width: calc(100% - 30px); /* Adjust width based on new padding */
-            }
-        }
+        /* --- POPUP & MISC --- */
+        .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease; }
+        .popup-overlay.show { opacity: 1; visibility: visible; }
+        .popup-content { background-color: var(--bg-card); padding: 2rem; border-radius: var(--border-radius); border: 1px solid var(--border-color); max-width: 500px; width: 90%; }
+        .popup-content .close-btn { position: absolute; top: 1rem; right: 1rem; font-size: 2rem; cursor: pointer; color: var(--text-secondary); background: none; border: none; }
+        .loader { border: 4px solid var(--border-color); border-top: 4px solid var(--secondary-accent); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 50px auto; display: none; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loader.show { display: block; }
+        .no-data-message { text-align: center; padding: 3rem; font-size: 1.2em; color: var(--text-secondary); background-color: var(--primary-accent); border-radius: var(--border-radius); }
+        .footer { background-color: var(--bg-card); color: var(--text-secondary); text-align: center; padding: 1.5rem; margin-top: 2rem; border-top: 1px solid var(--border-color); }
     </style>
 </head>
 <body>
     <header class="header">
-        <a href="index.html" class="logo">Timetable & Events</a>
-        <nav>
-            <a href="admin.html" class="nav-link">Admin Panel</a>
-        </nav>
+        <a href="index.html" class="logo">Scheduler</a>
+        <nav><a href="admin.html" class="nav-link">Admin Panel</a></nav>
     </header>
-
-    <div class="container">
-        <h1>Class Timetable & Event Reminder</h1>
-
+    <main class="container">
+        <h1>Class Schedule & Reminders</h1>
         <div class="view-switcher">
-            <button id="showTimetableBtn" class="active">Show Timetable</button>
-            <button id="showEventsBtn">Show Events</button>
+            <button id="showTimetableBtn" class="active">Timetable</button>
+            <button id="showEventsBtn">Events</button>
         </div>
-
-        <div id="filters" class="filters hidden">
-            <label for="eventType">Filter by Type:</label>
-            <select id="eventType">
-                <option value="">All</option>
-                <option value="Assignment">Assignment</option>
-                <option value="Exam">Exam</option>
-                <option value="Notice">Notice</option>
-                <option value="Holiday">Holiday</option>
-                </select>
-
-            <label for="eventSubject">Filter by Subject:</label>
-            <input type="text" id="eventSubject" placeholder="Enter subject...">
-
-            <label for="eventTitleFilter">Filter by Title:</label>
-            <input type="text" id="eventTitleFilter" placeholder="Enter title...">
-
-            <label for="eventDate">Filter by Date:</label>
-            <input type="date" id="eventDate">
-        </div>
-
-        <div id="loader" class="loader show"></div> <div id="timetable-section" class="content-section">
-            <h2>Weekly Timetable</h2>
-            <div id="timetable-grid">
-                </div>
-        </div>
-
-        <div id="events-section" class="content-section hidden">
+        <div id="filters" class="filters"></div>
+        <div id="loader" class="loader show"></div>
+        <div id="timetable-section" class="content-section visible"></div>
+        <div id="events-section" class="content-section">
             <h2>Upcoming Events</h2>
-            <div id="events-list">
-                </div>
+            <div id="events-list"></div>
         </div>
-    </div>
-
-    <div id="classDetailsPopupOverlay" class="class-details-popup-overlay">
-        <div class="class-details-popup">
+    </main>
+    <div id="classDetailsPopupOverlay" class="popup-overlay">
+        <div class="popup-content">
             <button class="close-btn">&times;</button>
             <h3 id="popupSubject"></h3>
             <p><strong>Teacher:</strong> <span id="popupTeacher"></span></p>
             <p><strong>Room:</strong> <span id="popupRoom"></span></p>
             <p><strong>Time:</strong> <span id="popupTime"></span></p>
-            <p id="popupEffectiveUntil" style="font-style: italic; font-size: 0.9em; color: #777;"></p> <!-- New line for effective date -->
+            <p id="popupEffectiveUntil" style="font-style: italic; font-size: 0.9em;"></p>
         </div>
     </div>
     <footer class="footer">
-        <div class='onesignal-customlink-container'></div>
         <p>&copy; 2025 Class Timetable & Event Reminder. All rights reserved.</p>
     </footer>
 
     <script>
-        /* --- script.js content starts here --- */
-        document.addEventListener('DOMContentLoaded', async () => {
-            // IMPORTANT: This URL is provided by the user.
-            const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbztJs-3nqRRaxzJG-Buw2CbY5Gqm2_hj_xDf5xhUQ2ebrV2eANFVUzfXHehQEiQ_wZAGQ/exec';
-            // IMPORTANT: This SECRET_KEY MUST match the one in your Google Apps Script (Code.gs)
-            const SECRET_KEY = 'your_secret_key_here'; // <--- CHANGE THIS!
+    document.addEventListener('DOMContentLoaded', async () => {
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbztJs-3nqRRaxzJG-Buw2CbY5Gqm2_hj_xDf5xhUQ2ebrV2eANFVUzfXHehQEiQ_wZAGQ/exec';
+        const SECRET_KEY = 'your_secret_key_here';
 
-            const loader = document.getElementById('loader');
-            const showTimetableBtn = document.getElementById('showTimetableBtn');
-            const showEventsBtn = document.getElementById('showEventsBtn');
-            const timetableSection = document.getElementById('timetable-section');
-            const eventsSection = document.getElementById('events-section');
-            const filters = document.getElementById('filters');
+        let allTimetable = [];
+        let allEvents = [];
+        let highlightInterval;
+        const activeCountdowns = {};
 
-            const timetableGrid = document.getElementById('timetable-grid');
-            const eventsList = document.getElementById('events-list');
-            const eventTypeFilter = document.getElementById('eventType');
-            const eventSubjectFilter = document.getElementById('eventSubject');
-            const eventTitleFilter = document.getElementById('eventTitleFilter'); // New filter element
-            const eventDateFilter = document.getElementById('eventDate');
+        // --- Element Selectors ---
+        const loader = document.getElementById('loader');
+        const filtersContainer = document.getElementById('filters');
+        const popupOverlay = document.getElementById('classDetailsPopupOverlay');
+        const timetableSection = document.getElementById('timetable-section');
+        const eventsSection = document.getElementById('events-section');
 
-            const classDetailsPopupOverlay = document.getElementById('classDetailsPopupOverlay');
-            const popupSubject = document.getElementById('popupSubject');
-            const popupTeacher = document.getElementById('popupTeacher');
-            const popupRoom = document.getElementById('popupRoom');
-            const popupTime = document.getElementById('popupTime');
-            const popupEffectiveUntil = document.getElementById('popupEffectiveUntil'); // New element
-            const popupCloseBtn = classDetailsPopupOverlay.querySelector('.close-btn');
+        // --- Utility Functions ---
+        const showLoader = () => loader.classList.add('show');
+        const hideLoader = () => loader.classList.remove('show');
+        
+        const fetchData = async (sheetName) => {
+            try {
+                const url = `${WEB_APP_URL}?sheet=${sheetName}&secretKey=${SECRET_KEY}&token=dummy_token_for_public_read`;
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                console.error(`Error fetching ${sheetName}:`, error);
+                return [];
+            }
+        };
 
-            let allEvents = []; // Global array to store all fetched events
-            const activeCountdowns = {}; // Store countdown intervals by event ID
+        const robustFormatTime = (timeValue) => {
+            if (!timeValue) return 'N/A';
+            try {
+                let dateObj;
+                if (timeValue instanceof Date) { dateObj = timeValue; }
+                else if (typeof timeValue === 'string') {
+                    if (timeValue.includes('T')) { dateObj = new Date(timeValue); }
+                    else { const parts = timeValue.split(':'); dateObj = new Date(); dateObj.setHours(parts[0], parts[1], 0, 0); }
+                } else { dateObj = new Date(timeValue); }
+                if (isNaN(dateObj.getTime())) return String(timeValue);
+                return dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+            } catch (e) { return String(timeValue); }
+        };
 
-            const showLoader = () => loader.classList.add('show');
-            const hideLoader = () => loader.classList.remove('show');
-
-            const fetchData = async (sheetName) => {
-                try {
-                    // Include secretKey and a dummy token for GET requests to satisfy authentication in Apps Script
-                    const url = new URL(WEB_APP_URL);
-                    url.searchParams.append('sheet', sheetName);
-                    url.searchParams.append('secretKey', SECRET_KEY);
-                    url.searchParams.append('token', 'dummy_token_for_public_read'); // A dummy token for public read
-                                                                                     // Apps Script will check if it's 'valid'
-                                                                                     // We could make doGet not require a token for public data,
-                                                                                     // but for now, this keeps it consistent with doPost auth.
-
-                    const response = await fetch(url.toString());
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
-                    return data;
-                } catch (error) {
-                    console.error(`Error fetching ${sheetName} data:`, error);
-                    return []; // Return empty array on error
-                }
-            };
-
-            const showSection = (sectionId) => {
-                const sections = [timetableSection, eventsSection];
-                sections.forEach(section => {
-                    if (section.id === sectionId) {
-                        section.classList.remove('hidden');
-                        section.classList.add('visible');
-                    } else {
-                        section.classList.add('hidden');
-                        section.classList.remove('visible');
-                    }
-                });
-
-                // Toggle filters visibility based on active section
-                if (sectionId === 'events-section') {
-                    filters.classList.remove('hidden');
-                    filters.classList.add('visible');
+        const robustTimeToMinutes = (timeValue) => {
+            if (!timeValue) return 0;
+            try {
+                let h = 0, m = 0;
+                if (timeValue instanceof Date) { h = timeValue.getHours(); m = timeValue.getMinutes(); }
+                else if (typeof timeValue === 'string') {
+                    if (timeValue.includes('T')) { const timePart = timeValue.split('T')[1]; [h, m] = timePart.split(':').map(Number); }
+                    else { [h, m] = timeValue.split(':').map(Number); }
                 } else {
-                    filters.classList.add('hidden');
-                    filters.classList.remove('visible');
+                    const dateObj = new Date(timeValue);
+                    if (!isNaN(dateObj.getTime())) { h = dateObj.getHours(); m = dateObj.getMinutes(); }
                 }
+                return (h * 60) + m;
+            } catch { return 0; }
+        };
 
-                // Update active button state
-                showTimetableBtn.classList.remove('active');
-                showEventsBtn.classList.remove('active');
-                if (sectionId === 'timetable-section') {
-                    showTimetableBtn.classList.add('active');
-                } else {
-                    showEventsBtn.classList.add('active');
-                }
-            };
+        // --- Core Logic ---
+        const showSection = (sectionId) => {
+            document.querySelectorAll('.content-section').forEach(s => s.classList.toggle('visible', s.id === sectionId));
+            filtersContainer.classList.toggle('visible', sectionId === 'events-section');
+            document.querySelectorAll('.view-switcher button').forEach(b => b.classList.toggle('active', b.id.includes(sectionId.split('-')[0])));
+            if (sectionId === 'timetable-section') {
+                highlightCurrentClass();
+            } else {
+                if (highlightInterval) clearInterval(highlightInterval);
+            }
+        };
 
-            // Helper function to format time strings (e.g., "8:15 AM", "14:30")
-            const formatTime = (timeValue) => {
-                try {
-                    let dateObj;
+        // --- Timetable Rendering (AGENDA VIEW) ---
+        const renderTimetable = (data) => {
+            const container = document.getElementById('timetable-section');
+            if (data.length === 0) {
+                container.innerHTML = '<p class="no-data-message">No timetable data available.</p>';
+                return;
+            }
+            container.innerHTML = `<h2>Daily Agenda</h2><div class="agenda-view"></div>`;
+            renderAgendaView(data);
+        };
 
-                    if (timeValue instanceof Date) {
-                        dateObj = timeValue;
-                    } else if (typeof timeValue === 'string') {
-                        // Attempt to parse as a standard time string ("09:00 AM", "14:30")
-                        dateObj = new Date(`2000/01/01 ${timeValue}`);
+        const renderAgendaView = (data) => {
+            const container = document.querySelector('.agenda-view');
+            const dayOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+            const classesByDay = dayOrder.reduce((acc, day) => ({...acc, [day]: []}), {});
+            data.forEach(item => { if (item.Day && classesByDay[item.Day]) classesByDay[item.Day].push(item); });
 
-                        // If direct parsing failed OR it resulted in an 1899 epoch date (common for Sheets' time values),
-                        // AND it looks like an ISO string, try to extract the time part from the ISO string.
-                        if (isNaN(dateObj.getTime()) || (dateObj.getFullYear() < 1970 && String(timeValue).includes('T') && String(timeValue).includes('Z'))) {
-                            const timePartMatch = String(timeValue).match(/T(\d{2}:\d{2}:\d{2})/); // Extract HH:MM:SS
-                            if (timePartMatch && timePartMatch[1]) {
-                                dateObj = new Date(`2000/01/01 ${timePartMatch[1]}`);
-                            } else {
-                                // Fallback: if it's an ISO string but the above didn't work,
-                                // try parsing the original ISO string as a Date object.
-                                dateObj = new Date(timeValue);
-                            }
-                        }
-                    }
+            const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+            const activeDay = dayOrder.includes(today) ? today : "Monday";
 
-                    if (isNaN(dateObj.getTime())) {
-                        console.warn("Frontend formatTime: Could not reliably parse time value, returning original:", timeValue);
-                        return String(timeValue); // Fallback to original string
-                    }
-
-                    // Use toLocaleTimeString for robust, locale-aware time formatting
-                    return dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-
-                } catch (e) {
-                    console.warn("Frontend formatTime: Error during formatting, returning original:", timeValue, e);
-                    return String(timeValue); // Fallback to original string on error
-                }
-            };
-
-
-            const renderTimetable = (timetableData) => {
-                timetableGrid.innerHTML = ''; // Clear previous content
-
-                if (timetableData.length === 0) {
-                    timetableGrid.innerHTML = '<p class="no-events-message">No timetable data available.</p>';
-                    return;
-                }
-
-                const dayOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-                const uniqueTimeSlots = new Set();
-                const classesByTimeAndDay = {}; // Structure: { "HH:MM": { "Day": [class1, class2], ... }, ... }
-
-                const today = new Date();
-                today.setHours(0, 0, 0, 0); // Normalize today's date to start of day for comparison
-
-                // Filter timetable data based on EffectiveUntilDate
-                const filteredTimetableData = timetableData.filter(item => {
-                    if (item.EffectiveUntilDate) {
-                        const effectiveDate = new Date(item.EffectiveUntilDate);
-                        effectiveDate.setHours(0, 0, 0, 0); // Normalize effective date to start of day
-                        return effectiveDate >= today; // Only include if effective date is today or in the future
-                    }
-                    return true; // If no EffectiveUntilDate, it's a permanent entry, so include it
-                });
-
-
-                filteredTimetableData.forEach(item => {
-                    if (item.StartTime) {
-                        const formattedStartTime = formatTime(item.StartTime);
-                        uniqueTimeSlots.add(formattedStartTime);
-                    }
-                    if (item.StartTime && item.Day && dayOrder.includes(item.Day)) {
-                        const formattedStartTime = formatTime(item.StartTime);
-                        if (!classesByTimeAndDay[formattedStartTime]) {
-                            classesByTimeAndDay[formattedStartTime] = {};
-                        }
-                        if (!classesByTimeAndDay[formattedStartTime][item.Day]) {
-                            classesByTimeAndDay[formattedStartTime][item.Day] = [];
-                        }
-                        classesByTimeAndDay[formattedStartTime][item.Day].push(item);
-                    }
-                });
-
-                const sortedTimeSlots = Array.from(uniqueTimeSlots).sort((a, b) => {
-                    const timeA = new Date(`2000/01/01 ${a}`);
-                    const timeB = new Date(`2000/01/01 ${b}`);
-                    return timeA - timeB;
-                });
-
-                const table = document.createElement('table');
-                const thead = document.createElement('thead');
-                const tbody = document.createElement('tbody');
-
-                const headerRow = document.createElement('tr');
-                headerRow.innerHTML = '<th>Time</th>';
-                dayOrder.forEach(day => {
-                    headerRow.innerHTML += `<th>${day}</th>`;
-                });
-                thead.appendChild(headerRow);
-                table.appendChild(thead);
-
-                sortedTimeSlots.forEach(timeSlot => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `<td>${timeSlot}</td>`;
-
-                    dayOrder.forEach(day => {
-                        const cell = document.createElement('td');
-                        const classesInSlot = classesByTimeAndDay[timeSlot] && classesByTimeAndDay[timeSlot][day] ? classesByTimeAndDay[timeSlot][day] : [];
-
-                        if (classesInSlot.length > 0) {
-                            classesInSlot.forEach(classItem => {
-                                const classDiv = document.createElement('div');
-                                classDiv.className = 'table-class-cell';
-                                classDiv.dataset.subject = classItem.Subject;
-                                classDiv.dataset.teacher = classItem.Teacher;
-                                classDiv.dataset.room = classItem.Room;
-                                classDiv.dataset.startTime = formatTime(classItem.StartTime);
-                                classDiv.dataset.endTime = formatTime(classItem.EndTime);
-                                classDiv.dataset.effectiveUntilDate = classItem.EffectiveUntilDate || ''; // Store new field
-
-                                classDiv.innerHTML = `<strong>${classItem.Subject}</strong>`;
-                                cell.appendChild(classDiv);
-                            });
-                        } else {
-                            cell.innerHTML = '';
-                        }
-                        row.appendChild(cell);
+            let agendaHtml = `<div class="day-switcher">${dayOrder.map(d => `<button data-day="${d}" class="${d === activeDay ? 'active' : ''}">${d}</button>`).join('')}</div>`;
+            
+            dayOrder.forEach(day => {
+                const dayClasses = classesByDay[day].sort((a, b) => robustTimeToMinutes(a.StartTime) - robustTimeToMinutes(b.StartTime));
+                agendaHtml += `<div class="agenda-day-content ${day === activeDay ? 'active' : ''}" id="agenda-${day}">`;
+                if (dayClasses.length > 0) {
+                    dayClasses.forEach(c => {
+                        agendaHtml += `
+                            <div class="agenda-class-card" data-id="${c.ID}" data-start="${c.StartTime}" data-end="${c.EndTime}">
+                                <div class="class-time">
+                                    <span class="start-time">${robustFormatTime(c.StartTime)}</span>
+                                    <span class="end-time">${robustFormatTime(c.EndTime)}</span>
+                                </div>
+                                <div class="class-details">
+                                    <h3>${c.Subject}</h3>
+                                    <p>${c.Teacher} &bull; Room ${c.Room}</p>
+                                </div>
+                            </div>`;
                     });
-                    tbody.appendChild(row);
-                });
-                table.appendChild(tbody);
-                timetableGrid.appendChild(table);
-
-                if (filteredTimetableData.length > 0 && table.innerHTML === '<thead><tr><th>Time</th><th>Monday</th><th>Tuesday</th><th>Wednesday</th><th>Thursday</th><th>Friday</th><th>Saturday</th><th>Sunday</th></tr></thead><tbody></tbody>') {
-                     timetableGrid.innerHTML = '<p class="no-events-message">Timetable data found, but no valid classes were rendered. Ensure "Day", "StartTime", and "EndTime" columns are correctly populated.</p>';
-                } else if (filteredTimetableData.length === 0 && timetableData.length > 0) {
-                     timetableGrid.innerHTML = '<p class="no-events-message">All timetable entries have expired or are not effective yet.</p>';
-                }
-            };
-
-            // Clears all active countdown intervals
-            const clearAllCountdowns = () => {
-                for (const eventId in activeCountdowns) {
-                    clearInterval(activeCountdowns[eventId]);
-                    delete activeCountdowns[eventId];
-                }
-            };
-
-            // Function to update a single event's countdown
-            const updateCountdown = (event, countdownElement) => {
-                const eventDateTime = new Date(`${event.Date} ${event.Time}`);
-                const now = new Date();
-                const diff = eventDateTime.getTime() - now.getTime();
-
-                if (diff < 0) {
-                    countdownElement.textContent = "OVERDUE";
-                    countdownElement.className = 'time-left overdue';
-                    clearInterval(activeCountdowns[event.ID]);
-                    delete activeCountdowns[event.ID];
-                    return;
-                }
-
-                const seconds = Math.floor((diff / 1000) % 60);
-                const minutes = Math.floor((diff / (1000 * 60)) % 60);
-                const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-                const days = Math.floor((diff / (1000 * 60 * 60 * 24)));
-
-                let countdownText = "";
-                let countdownClass = "time-left";
-
-                if (days > 0) {
-                    countdownText = `${days} day${days > 1 ? 's' : ''} left`;
-                    if (days <= 7) countdownClass += " soon";
-                } else if (hours > 0) {
-                    countdownText = `${hours}h ${minutes}m ${seconds}s left`;
-                    countdownClass += " soon";
-                } else if (minutes > 0) {
-                    countdownText = `${minutes}m ${seconds}s left`;
-                    countdownClass += " soon";
                 } else {
-                    countdownText = `${seconds}s left`;
-                    countdownClass += " soon";
+                    agendaHtml += '<p class="no-data-message">No classes scheduled for this day.</p>';
                 }
-
-                countdownElement.textContent = countdownText;
-                countdownElement.className = countdownClass;
-            };
-
-
-            const renderEvents = (eventsToRender) => {
-                clearAllCountdowns();
-                eventsList.innerHTML = '';
-
-                const now = new Date();
-                let activeEvents = eventsToRender.filter(event => {
-                    const eventDateTime = new Date(`${event.Date} ${event.Time}`);
-                    return eventDateTime >= now;
-                });
-
-                if (activeEvents.length === 0) {
-                    eventsList.innerHTML = '<p class="no-events-message">No upcoming events found matching your criteria.</p>';
-                    return;
-                }
-
-                activeEvents.sort((a, b) => {
-                    const dateTimeA = new Date(`${a.Date} ${a.Time}`);
-                    const dateTimeB = new Date(`${b.Date} ${b.Time}`);
-                    return dateTimeA - dateTimeB;
-                });
-
-                activeEvents.forEach(event => {
-                    const card = document.createElement('div');
-                    card.className = `event-card ${event.Type.toLowerCase().replace(/\s/g, '-')}`;
-                    card.id = `event-${event.ID}`; // Set ID for deep linking
-
-                    const formattedDate = event.Date ? new Date(event.Date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A';
-                    const formattedTime = event.Time || 'N/A';
-
-                    card.innerHTML = `
-                        <p class="type">${event.Type}</p>
-                        <h3>${event.Title}</h3>
-                        <p><strong>Subject:</strong> ${event.Subject}</p>
-                        <p class="date-time"><strong>Date:</strong> ${formattedDate} <strong>Time:</strong> ${formattedTime}</p>
-                        <p><strong>Details:</strong> ${event.Details}</p>
-                        <div class="time-left" id="countdown-${event.ID}"></div>
-                    `;
-                    eventsList.appendChild(card);
-
-                    const countdownElement = document.getElementById(`countdown-${event.ID}`);
-                    if (countdownElement) {
-                        updateCountdown(event, countdownElement);
-
-                        const eventDateTime = new Date(`${event.Date} ${event.Time}`);
-                        const diffMs = eventDateTime.getTime() - now.getTime();
-                        if (diffMs > 0 && diffMs <= (24 * 60 * 60 * 1000) + (5 * 60 * 1000)) {
-                            activeCountdowns[event.ID] = setInterval(() => {
-                                updateCountdown(event, countdownElement);
-                            }, 1000);
-                        }
-                    }
-                });
-            };
-
-            const applyFilters = () => {
-                let filteredEvents = [...allEvents];
-
-                const type = eventTypeFilter.value.toLowerCase();
-                const subject = eventSubjectFilter.value.toLowerCase().trim();
-                const title = eventTitleFilter.value.toLowerCase().trim(); // Get title filter value
-                const date = eventDateFilter.value;
-
-                if (type) {
-                    filteredEvents = filteredEvents.filter(event => event.Type.toLowerCase() === type);
-                }
-
-                if (subject) {
-                    filteredEvents = filteredEvents.filter(event => event.Subject && event.Subject.toLowerCase().includes(subject));
-                }
-
-                if (title) { // Apply title filter
-                    filteredEvents = filteredEvents.filter(event => event.Title && event.Title.toLowerCase().includes(title));
-                }
-
-                if (date) {
-                    filteredEvents = filteredEvents.filter(event => event.Date === date);
-                }
-
-                renderEvents(filteredEvents);
-            };
-
-            // Add event listeners for filters
-            eventTypeFilter.addEventListener('change', applyFilters);
-            eventSubjectFilter.addEventListener('input', applyFilters);
-            eventTitleFilter.addEventListener('input', applyFilters); // New event listener for title filter
-            eventDateFilter.addEventListener('change', applyFilters);
-
-            // Add event listeners for view switcher buttons
-            showTimetableBtn.addEventListener('click', () => showSection('timetable-section'));
-            showEventsBtn.addEventListener('click', () => showSection('events-section'));
-
-            // Event listener for showing class details popup using event delegation
-            timetableGrid.addEventListener('click', (event) => {
-                const classCell = event.target.closest('.table-class-cell');
-                if (classCell) {
-                    popupSubject.textContent = classCell.dataset.subject;
-                    popupTeacher.textContent = classCell.dataset.teacher;
-                    popupRoom.textContent = classCell.dataset.room;
-                    popupTime.textContent = `${classCell.dataset.startTime} - ${classCell.dataset.endTime}`;
-
-                    // Display Effective Until Date if available
-                    if (classCell.dataset.effectiveUntilDate && classCell.dataset.effectiveUntilDate !== 'N/A') {
-                        const formattedEffectiveDate = new Date(classCell.dataset.effectiveUntilDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-                        popupEffectiveUntil.textContent = `Effective Until: ${formattedEffectiveDate}`;
-                        popupEffectiveUntil.style.display = 'block';
-                    } else {
-                        popupEffectiveUntil.textContent = '';
-                        popupEffectiveUntil.style.display = 'none';
-                    }
-
-                    classDetailsPopupOverlay.classList.add('show');
-                }
+                agendaHtml += `</div>`;
             });
+            container.innerHTML = agendaHtml;
+            highlightCurrentClass();
+        };
 
-            // Event listener for closing class details popup
-            popupCloseBtn.addEventListener('click', () => {
-                classDetailsPopupOverlay.classList.remove('show');
-            });
+        const highlightCurrentClass = () => {
+            if (highlightInterval) clearInterval(highlightInterval);
+            const updateHighlight = () => {
+                const todayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+                const activeDayContainer = document.getElementById(`agenda-${todayName}`);
+                if (!activeDayContainer) return;
 
-            // Close popup when clicking outside it
-            classDetailsPopupOverlay.addEventListener('click', (event) => {
-                if (event.target === classDetailsPopupOverlay) {
-                    classDetailsPopupOverlay.classList.remove('show');
-                }
-            });
-
-            // Function to check URL fragment and scroll to element
-            const checkUrlFragmentAndScroll = () => {
-                const hash = window.location.hash;
-                if (hash) {
-                    if (hash.startsWith('#event-')) {
-                        const eventId = hash.substring(7); // Remove '#event-' prefix
-                        showSection('events-section'); // Ensure events section is visible
-                        // Wait a moment for rendering to complete
-                        setTimeout(() => {
-                            const targetElement = document.getElementById(hash.substring(1)); // Get element by ID (remove #)
-                            if (targetElement) {
-                                targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                targetElement.classList.add('highlight-card'); // Add highlight
-                                setTimeout(() => {
-                                    targetElement.classList.remove('highlight-card'); // Remove highlight after animation
-                                }, 2000); // Match animation duration
-                            }
-                        }, 500); // Short delay to allow section to become visible and content to render
-                    } else if (hash === '#timetable-section') {
-                        showSection('timetable-section');
-                        setTimeout(() => {
-                            const targetElement = document.getElementById('timetable-grid'); // Scroll to the timetable grid
-                            if (targetElement) {
-                                targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                            }
-                        }, 500);
+                document.querySelectorAll('.agenda-class-card.is-current').forEach(el => el.classList.remove('is-current'));
+                
+                const nowInMinutes = new Date().getHours() * 60 + new Date().getMinutes();
+                const classCards = activeDayContainer.querySelectorAll('.agenda-class-card');
+                
+                for (const card of classCards) {
+                    const start = robustTimeToMinutes(card.dataset.start);
+                    const end = robustTimeToMinutes(card.dataset.end);
+                    if (nowInMinutes >= start && nowInMinutes < end) {
+                        card.classList.add('is-current');
+                        break;
                     }
                 }
             };
+            updateHighlight();
+            highlightInterval = setInterval(updateHighlight, 60000);
+        };
 
-            // OneSignal Initialization
-            window.OneSignal = window.OneSignal || [];
-            OneSignal.push(function() {
-                OneSignal.init({
-                    appId: "50801439-7868-4cae-a262-018829ad2bc1", // Your actual OneSignal App ID
-                    // Add other config here if you have it, like safari_web_id
-                    autoResubscribe: true, // Recommended to automatically re-subscribe users
-                    persistNotification: false, // Optional: Notifications disappear after click
-                    // serviceWorkerPath: '/OneSignalSDKWorker.js' // Only if you put it in root
-                });
+        // --- Events Rendering (IMPROVED GROUPED VIEW) ---
+        const renderEvents = (events) => {
+            const eventsList = document.getElementById('events-list');
+            if (!eventsList) return;
+            clearAllCountdowns();
+            
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
+            const endOfWeek = new Date(today); endOfWeek.setDate(today.getDate() + (7 - today.getDay()));
 
-                // Explicitly show the OneSignal slidedown prompt to encourage subscription
-                OneSignal.showSlidedownPrompt();
+            const groups = { today: [], tomorrow: [], thisWeek: [], later: [] };
 
-                OneSignal.isPushNotificationsEnabled(function(isEnabled) {
-                    if (isEnabled) {
-                        console.log("Push notifications are enabled!");
-                    } else {
-                        console.log("Push notifications are NOT enabled. Prompting for subscription...");
-                    }
-                });
-            });
+            events.filter(e => new Date(e.Date) >= today)
+                  .sort((a, b) => new Date(a.Date) - new Date(b.Date))
+                  .forEach(event => {
+                      const eventDate = new Date(event.Date);
+                      if (eventDate.getTime() === today.getTime()) groups.today.push(event);
+                      else if (eventDate.getTime() === tomorrow.getTime()) groups.tomorrow.push(event);
+                      else if (eventDate <= endOfWeek) groups.thisWeek.push(event);
+                      else groups.later.push(event);
+                  });
 
+            let html = '';
+            const createEventCard = event => {
+                const formattedDate = new Date(event.Date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+                return `<div class="event-card ${event.Type?.toLowerCase()}" id="event-${event.ID}">
+                    <h4>${event.Title}</h4>
+                    <p><strong>${event.Subject}</strong> &bull; ${formattedDate}</p>
+                    <p>${event.Details}</p>
+                    <div class="time-left" id="countdown-${event.ID}"></div>
+                </div>`;
+            };
 
-            // Initial data fetch and rendering on page load
+            if (groups.today.length) html += `<div class="event-group"><h3>Today</h3>${groups.today.map(createEventCard).join('')}</div>`;
+            if (groups.tomorrow.length) html += `<div class="event-group"><h3>Tomorrow</h3>${groups.tomorrow.map(createEventCard).join('')}</div>`;
+            if (groups.thisWeek.length) html += `<div class="event-group"><h3>This Week</h3>${groups.thisWeek.map(createEventCard).join('')}</div>`;
+            if (groups.later.length) html += `<div class="event-group"><h3>Later</h3>${groups.later.map(createEventCard).join('')}</div>`;
+            
+            if (html === '') {
+                eventsList.innerHTML = '<p class="no-data-message">No upcoming events found.</p>';
+            } else {
+                eventsList.innerHTML = html;
+                [...groups.today, ...groups.tomorrow, ...groups.thisWeek, ...groups.later].forEach(setupCountdown);
+            }
+        };
+        
+        const clearAllCountdowns = () => Object.values(activeCountdowns).forEach(clearInterval);
+        const setupCountdown = (event) => {
+            const el = document.getElementById(`countdown-${event.ID}`);
+            if (!el) return;
+            const update = () => {
+                const diff = new Date(`${event.Date} ${event.Time || '00:00'}`).getTime() - new Date().getTime();
+                if (diff < 0) { el.textContent = "OVERDUE"; el.className = 'time-left overdue'; clearInterval(activeCountdowns[event.ID]); return; }
+                const d = Math.floor(diff / 864e5), h = Math.floor(diff % 864e5 / 36e5), m = Math.floor(diff % 36e5 / 6e4), s = Math.floor(diff % 6e4 / 1e3);
+                let text = d > 0 ? `${d}d ${h}h left` : h > 0 ? `${h}h ${m}m left` : m > 0 ? `${m}m ${s}s left` : `${s}s left`;
+                el.textContent = text;
+                el.className = `time-left ${d < 7 ? 'soon' : ''}`;
+            };
+            update();
+            activeCountdowns[event.ID] = setInterval(update, 1000);
+        };
+        
+        const applyFilters = () => {
+            const type = document.getElementById('eventType').value.toLowerCase();
+            const subject = document.getElementById('eventSubject').value.toLowerCase().trim();
+            const title = document.getElementById('eventTitleFilter').value.toLowerCase().trim();
+            const date = document.getElementById('eventDate').value;
+            const filtered = allEvents.filter(e => 
+                (!type || e.Type?.toLowerCase() === type) &&
+                (!subject || e.Subject?.toLowerCase().includes(subject)) &&
+                (!title || e.Title?.toLowerCase().includes(title)) &&
+                (!date || e.Date === date)
+            );
+            renderEvents(filtered);
+        };
+
+        const showClassPopup = (classData) => {
+            popupOverlay.querySelector('#popupSubject').textContent = classData.Subject;
+            popupOverlay.querySelector('#popupTeacher').textContent = classData.Teacher;
+            popupOverlay.querySelector('#popupRoom').textContent = classData.Room;
+            popupOverlay.querySelector('#popupTime').textContent = `${robustFormatTime(classData.StartTime)} - ${robustFormatTime(classData.EndTime)}`;
+            const effectiveEl = popupOverlay.querySelector('#popupEffectiveUntil');
+            if (classData.EffectiveUntilDate) {
+                effectiveEl.textContent = `Effective Until: ${new Date(classData.EffectiveUntilDate).toLocaleDateString('en-GB')}`;
+                effectiveEl.style.display = 'block';
+            } else {
+                effectiveEl.style.display = 'none';
+            }
+            popupOverlay.classList.add('show');
+        };
+
+        // --- Event Listeners ---
+        document.getElementById('showTimetableBtn').addEventListener('click', () => showSection('timetable-section'));
+        document.getElementById('showEventsBtn').addEventListener('click', () => showSection('events-section'));
+        timetableSection.addEventListener('click', (e) => {
+            const dayButton = e.target.closest('.day-switcher button');
+            if (dayButton) {
+                document.querySelector('.day-switcher button.active')?.classList.remove('active');
+                dayButton.classList.add('active');
+                document.querySelector('.agenda-day-content.active')?.classList.remove('active');
+                document.getElementById(`agenda-${dayButton.dataset.day}`).classList.add('active');
+                highlightCurrentClass();
+            }
+            const classCell = e.target.closest('.agenda-class-card');
+            if (classCell) {
+                const classData = allTimetable.find(c => c.ID == classCell.dataset.id);
+                if (classData) showClassPopup(classData);
+            }
+        });
+        popupOverlay.addEventListener('click', (e) => {
+            if (e.target.matches('.popup-overlay, .close-btn')) e.currentTarget.classList.remove('show');
+        });
+        filtersContainer.innerHTML = `<div><select id="eventType"><option value="">All Types</option><option value="Assignment">Assignment</option><option value="Exam">Exam</option><option value="Notice">Notice</option><option value="Holiday">Holiday</option></select></div><div><input type="text" id="eventSubject" placeholder="Filter by Subject..."></div><div><input type="text" id="eventTitleFilter" placeholder="Filter by Title..."></div><div><input type="date" id="eventDate"></div>`;
+        filtersContainer.addEventListener('input', applyFilters);
+        
+        // --- Initial Load ---
+        (async () => {
             showLoader();
             try {
-                const [timetableData, eventsData] = await Promise.all([
-                    fetchData('Timetable'),
-                    fetchData('Events')
-                ]);
-
-                renderTimetable(timetableData);
-                allEvents = eventsData;
-                applyFilters();
-
-                // Call this after initial rendering to handle deep links
-                checkUrlFragmentAndScroll();
-
-                // Default to timetable if no specific hash is present
-                if (!window.location.hash) {
-                    showSection('timetable-section');
-                }
-
-
+                [allTimetable, allEvents] = await Promise.all([fetchData('Timetable'), fetchData('Events')]);
+                renderTimetable(allTimetable);
+                renderEvents(allEvents);
+                showSection('timetable-section');
             } catch (error) {
-                console.error("Failed to fetch initial data:", error);
-                timetableGrid.innerHTML = '<p class="no-events-message">Failed to load timetable data. Please try again later.</p>';
-                eventsList.innerHTML = '<p class="no-events-message">Failed to load events data. Please try again later.</p>';
+                console.error("Failed during initial data processing:", error);
+                timetableSection.innerHTML = '<p class="no-data-message">Failed to load data. Check console for details.</p>';
+                eventsSection.innerHTML = '<p class="no-data-message">Failed to load data. Check console for details.</p>';
             } finally {
                 hideLoader();
             }
-        });
-        /* --- script.js content ends here --- */
+        })();
+    });
     </script>
 </body>
 </html>
