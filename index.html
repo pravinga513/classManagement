@@ -148,15 +148,29 @@
             background-color: var(--primary-accent);
         }
         
-        .event-group h3 {
+        /* --- FIX: Event group titles now span the full grid width --- */
+        .event-group-title {
+            grid-column: 1 / -1; /* Span across all grid columns */
             color: var(--secondary-accent);
             margin-top: 2rem;
             margin-bottom: 1rem;
             padding-bottom: 0.5rem;
             border-bottom: 1px solid var(--border-color);
         }
-        #events-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
-        .event-card { background-color: var(--bg-card); border-radius: var(--border-radius); padding: 1.5rem; border-left: 5px solid; transition: all 0.3s ease; }
+
+        /* --- FIX: The main events list is the grid container for the CARDS --- */
+        #events-list { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
+            gap: 1.5rem; 
+        }
+        .event-card { 
+            background-color: var(--bg-card); 
+            border-radius: var(--border-radius); 
+            padding: 1.5rem; 
+            border-left: 5px solid; 
+            transition: all 0.3s ease; 
+        }
         .event-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
         .event-card.assignment { border-color: #ff9800; } .event-card.exam { border-color: #f44336; } .event-card.notice { border-color: #4caf50; } .event-card.holiday { border-color: #9c27b0; }
         .event-card h4 { margin: 0.5rem 0; font-size: 1.4em; } .event-card p { margin: 4px 0; color: var(--text-secondary); }
@@ -164,6 +178,16 @@
         .event-card .time-left.overdue { color: #f44336; }
         .event-card .time-left.soon { color: #ff9800; }
         .event-card .time-left:not(.overdue):not(.soon) { color: var(--text-primary); }
+
+        /* --- NEW: Highlight Animation --- */
+        .highlight-card {
+            animation: pulse-highlight 2.5s ease-out;
+        }
+        @keyframes pulse-highlight {
+            0% { box-shadow: 0 0 0 0 rgba(233, 69, 96, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(233, 69, 96, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(233, 69, 96, 0); }
+        }
 
         /* --- POPUP & MISC --- */
         .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease; }
@@ -392,10 +416,23 @@
                 </div>`;
             };
 
-            if (groups.today.length) html += `<div class="event-group"><h3>Today</h3>${groups.today.map(createEventCard).join('')}</div>`;
-            if (groups.tomorrow.length) html += `<div class="event-group"><h3>Tomorrow</h3>${groups.tomorrow.map(createEventCard).join('')}</div>`;
-            if (groups.thisWeek.length) html += `<div class="event-group"><h3>This Week</h3>${groups.thisWeek.map(createEventCard).join('')}</div>`;
-            if (groups.later.length) html += `<div class="event-group"><h3>Later</h3>${groups.later.map(createEventCard).join('')}</div>`;
+            // --- FIX: Generate group titles and cards directly inside the grid container ---
+            if (groups.today.length) {
+                html += `<h3 class="event-group-title">Today</h3>`;
+                html += groups.today.map(createEventCard).join('');
+            }
+            if (groups.tomorrow.length) {
+                html += `<h3 class="event-group-title">Tomorrow</h3>`;
+                html += groups.tomorrow.map(createEventCard).join('');
+            }
+            if (groups.thisWeek.length) {
+                html += `<h3 class="event-group-title">This Week</h3>`;
+                html += groups.thisWeek.map(createEventCard).join('');
+            }
+            if (groups.later.length) {
+                html += `<h3 class="event-group-title">Later</h3>`;
+                html += groups.later.map(createEventCard).join('');
+            }
             
             if (html === '') {
                 eventsList.innerHTML = '<p class="no-data-message">No upcoming events found.</p>';
@@ -460,10 +497,9 @@
                     if (targetElement) {
                         targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         // Add a temporary highlight effect
-                        targetElement.style.transition = 'box-shadow 0.5s ease-in-out';
-                        targetElement.style.boxShadow = '0 0 0 4px var(--secondary-accent)';
+                        targetElement.classList.add('highlight-card');
                         setTimeout(() => {
-                            targetElement.style.boxShadow = '';
+                            targetElement.classList.remove('highlight-card');
                         }, 2500);
                     }
                 }, 100); // Small delay to ensure the section is visible
