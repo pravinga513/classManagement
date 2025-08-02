@@ -1,23 +1,23 @@
 {
   "name": "Admin | SMJ - sybcomca",
-  "short_name": "BCOMCA",
+  "short_name": "ADMIN",
   "categories": [
     "Education"
   ],
  
   "icons": [
     {
-      "src": "https://mcmp.pg513.in/favicon.ico",
+      "src": "https://smj.pg513.in/favicon.ico",
       "type": "image/x-icon"
     },
     {
-      "src": "https://blogger.googleusercontent.com/img/a/AVvXsEhFy2pet5fWg2Fnhx3VVDu31j1cqlbq3LXrNKKi9E5-b6OSoPUf1UBPDChmlyHTBHbeLlxlnWJniNzLa90qpc-HZIMAYp6I0TnWKRX-y60ItybRbs7788nHavINo39TrbA730-ODphYxhSHtMC2Zq7YcssNqfTMiXke07VCYyXjygP04OCjCc86IflJPOWM",
+      "src": "https://blogger.googleusercontent.com/img/a/AVvXsEgqY3Uj-bGAdKenlwLP5Bppl6UkglL14k9OjUIHY2R3t7HPotEm8BKEiSEF2BKuP78OjSgPTuic6NDttqh8BbyaVWt6z7Cj4JJu2jpOlNEpQCwQj_9n0urpo_uR9NkPIva8sFASLxUehmnI-cnn4Tbzb5OmRgtR97oZSMKAMwcSVWUnZLHjexDHtVsZi4a-",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "https://blogger.googleusercontent.com/img/a/AVvXsEirImzPJjxiW9ujU8axpuJZiIsRi_kOV-4AYusmwCzdb2QVeZ14xXwZHFn9iLVMLmBiA2Z_UdrKh7L-PJ6IXJ7EHyNSOuNbijTEmXVdUE8Ijy_Sppme-DQBnGz1a5jDFaj7QA7sQN0_k2-sEs1gvuBJ7wVrt9VYJxx-0wGwH9vqrKTSc96pt4NoAEVt_8Bt",
+      "src": "https://blogger.googleusercontent.com/img/a/AVvXsEhdMgbJLOjlT3kQlzz8GF2yMMt8fgoG_eA5Wdz2AZwc4N-gVDQwRmkQw7TMY_5RtWI5NfjF4AejSENckIrZALoCfGyCjN6gdmB_o-4fznW8zJ22jb5W4G5JinO-5I5MAjmG9Fy5gRFrtmBsi2smoQq3QgOdDPY9zJQrIqXM9UE01xMHJ_gsK7DW08SwrWRk",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
