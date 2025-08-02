@@ -2,7 +2,7 @@
   "name": "SMJ sybcomca",
   "short_name": "BCOMCA",
   "categories": [
-    "games"
+    "Education"
   ],
  
   "icons": [
@@ -26,15 +26,15 @@
 
   "web_apps": [
     {
-      "web_app_identity": "https://MCMP.pg513.in/"
+      "web_app_identity": "https://smj.pg513.in/"
     }
   ],
 
 
   "theme_color": "#ff9800",
-  "background_color": "#17202c",
+  "background_color": "#1a1a2e",
   "display": "standalone",
   "prefer_related_applications": false,
-  "description": "Free marketplace for the best Minecraft mods, add-ons, maps, and more for both Minecraft pocket edition and Java edition.",
-  "start_url": "https://mcmp.pg513.in"
+  "description": "Your timetable and event reminders for BCOMCA.",
+  "start_url": "/p/sybcomca.html"
 }
