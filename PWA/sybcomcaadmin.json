@@ -1,10 +1,35 @@
 {
   "name": "Admin | SMJ - sybcomca",
   "short_name": "ADMIN",
+  "id": "/p/sybcomcaadmin.html",
   "categories": [
     "Education"
   ],
- 
+  "shortcuts": [
+    {
+      "name": "Add Event",
+      "url": "https://smj.pg513.in/p/sybcomcaadmin.html#eventFormSection",
+      "description": "Add a new event to the calendar.",
+      "icons": [
+        {
+          "src": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhQKcWC-J9KAFY-p7vddBbC9p7xGkm8wGJDlMeYLfOtwN_WyqMuAhcWs8GQ-AyuAuiVDdLCMz6fxcQ9u_8PmFnEA34AGG4UFTdXIexOWVlS99lsq9nwYeDRg6AFxo6pCQ1fZXaSCOFlzvSiQm8wV7C6yzcNoJGFI-f9Z_vGpWkzVCZlvmCXPYEhYfKwIw/s48/like.png",
+          "sizes": "48x48"
+        }
+      ]
+    },
+    {
+      "name": "Manage",
+      "url": "https://smj.pg513.in/p/sybcomcaadmin.html#manageEventsSection",
+      "short_name": "Manage",
+      "description": "Manage existing events and timetables.",
+      "icons": [
+        {
+          "src": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhs4bpFi6BxzyeBGIwlwM5gZvvWYRXozypDRSGQGw0x4Cn8uVmiei06hiEkEIhizb45cnF-Yu3x2CA6yPRyaUF8GrltXbYb30rAVSoW4FL-W5VRwV4VcpxT-gHaO79R1I_d5vliRhXH4JGOcLhemjMwBjJr0JLsnUuAggZRwToXVC2mh2_enGE6wgqB_g/s48/play.png",
+          "sizes": "48x48"
+        }
+      ]
+    }
+  ],
   "icons": [
     {
       "src": "https://smj.pg513.in/favicon.ico",
@@ -23,15 +48,6 @@
       "purpose": "any"
     }
   ],
-
-  "web_apps": [
-    {
-      "web_app_identity": "/p/sybcomcaadmin.html"
-    }
-  ],
-
-  
-
   "theme_color": "#0f3460",
   "background_color": "#1a1a2e",
   "display": "standalone",
