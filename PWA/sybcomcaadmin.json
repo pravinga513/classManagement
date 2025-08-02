@@ -1,21 +1,40 @@
 {
-  "name": "BCOMCA Admin",
-  "short_name": "Admin",
-  "description": "Admin panel for managing BCOMCA timetable and events.",
-  "start_url": "/p/sybcomcaadmin.html",
-  "display": "standalone",
-  "background_color": "#1a1a2e",
-  "theme_color": "#0f3460",
+  "name": "Admin | SMJ - sybcomca",
+  "short_name": "BCOMCA",
+  "categories": [
+    "Education"
+  ],
+ 
   "icons": [
     {
-      "src": "YOUR_ADMIN_ICON_192X192_URL_HERE",
-      "sizes": "192x192",
-      "type": "image/png"
+      "src": "https://mcmp.pg513.in/favicon.ico",
+      "type": "image/x-icon"
     },
     {
-      "src": "YOUR_ADMIN_ICON_512X512_URL_HERE",
+      "src": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi51TVt1crR9M0RDM2rpUdtbLnXdCwjsBtQ4uN5Fdmy6ROGDRzN9Hsmd-8vr4h36wCxDwpEOrldcfhQziS6334crKMMzuBBF-9punlZqH6KVCjHX8pQsS52mjlD8nezwFrJwWi8H2Jzrhv_KFijTAC_WMvICs4gYdprSHLcMzGKa1o-9ywTIrZf_iaT_OWv/s192/20240304_090811.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjSk-EOIR4vkHtTrQusuhg1mFYT-gckQsttm8fCoJQ4oXqvzi4Ih6KxJkuyX1nPkBFbJW0gmdoCV4zItNzX7Ky2iz4qsg_DjaO98ymlzXq4l5YwK1i23uq6-Wd7H1ptBrLKaLCE1F__drU8mo4QJ0Af4Re0WjYn276iwNOvUsx6HSsPV1Cz9-_6K1b_ABoH/s512/20240304_090801.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     }
-  ]
+  ],
+
+  "web_apps": [
+    {
+      "web_app_identity": "https://smj.pg513.in/"
+    }
+  ],
+
+
+  "theme_color": "#ff9800",
+  "background_color": "#1a1a2e",
+  "display": "standalone",
+  "prefer_related_applications": false,
+  "description": "Your timetable and event reminders for BCOMCA.",
+  "start_url": "/p/sybcomcaadmin.html"
 }
