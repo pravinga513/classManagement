@@ -1,6 +1,6 @@
 {
-  "name": "Student | SMJ - sybcomca",
-  "short_name": "BCOMCA",
+  "name": "Student | SMJ - sybcomca by Pravinga513",
+  "short_name": "STUDENT",
   "categories": [
     "Education"
   ],
@@ -11,13 +11,13 @@
       "type": "image/x-icon"
     },
     {
-      "src": "https://blogger.googleusercontent.com/img/a/AVvXsEi01q-mc6Oo5Z9OFbT69bte3zP45rmExdvUpNwi1z1YvnLioNKll64nTfRD20l_-sFE4yqvt7KRS662nd_XAbrRPenN-SCauUAmtkD_pD_JAbvoVeg6Ta357YQLJhGG6gA0cx2POQBeqRifUUZIahXII8wkIjX0anXeJIDRrfKmE8A2qIcECjKOYe8aJG8O",
+      "src": "https://blogger.googleusercontent.com/img/a/AVvXsEgVzNsQ3GeNjUsSIRGmaMSIw5NgFKee_i7v1FFG_RUWXT0qfCc_nNhQL3o1ZrNt9TuiSBuq1xXpunIYwUZtCOelYrfz66bLDWtjXG3hu2azjURsqipy-QaYQvEXFdS03mDqY4M3cRsG21utbxs4ld6YG4U3w0UM-LZ24ritXvZq1qFE4fr9pfjTaQ-XeZRV",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "https://blogger.googleusercontent.com/img/a/AVvXsEgLsJDqaEzR0LNJ7U6ImwM71QMKdXQ0VGjjH1Yd5fN5rpHtoMzT3o2EqbFkW5OffIHD-GxN3j4Kz_Z1kGko0amCx3DbJU9qZTpMJ0wkQzH3mBWSTNG3VDypuwZR7agwhJoGihXcAOmNgBsS918kfB1ctUX4aI8DvrfyngJVy87aZBacUK0OrD1vL-9Q5u2c",
+      "src": "https://blogger.googleusercontent.com/img/a/AVvXsEicVQdCeFGagoL-kg5z-KRkf6gcCm0SkZ6JyD_7EA5f9IdavQhZ3vsGZBftrGFkauXMQv4MOjN1hRQYaHn-2_3TVDs9EzMl-UweU-I6SReOL5cZAGBR7sYp6pi_Ozwep3VtV5Tqw1oMJzNoQEcW7UhwP9a3pVWEw5KEvxnXiuDp4Lj_VTF9hzOfEyjNS1vn",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
@@ -36,5 +36,5 @@
   "display": "standalone",
   "prefer_related_applications": false,
   "description": "Your timetable and event reminders for BCOMCA.",
-  "start_url": "/p/sybcomcaadmin.html"
+  "start_url": "/p/sybcomca.html"
 }
