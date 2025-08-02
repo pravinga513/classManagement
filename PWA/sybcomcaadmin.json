@@ -1,0 +1,21 @@
+{
+  "name": "BCOMCA Admin",
+  "short_name": "Admin",
+  "description": "Admin panel for managing BCOMCA timetable and events.",
+  "start_url": "/p/sybcomcaadmin.html",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#0f3460",
+  "icons": [
+    {
+      "src": "YOUR_ADMIN_ICON_192X192_URL_HERE",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "YOUR_ADMIN_ICON_512X512_URL_HERE",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
