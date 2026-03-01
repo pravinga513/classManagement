@@ -7,21 +7,21 @@
   ],
   "screenshots": [
     {
-      "src": "/ss/Layer 6.png",
+      "src": "https://raw.githubusercontent.com/pravinga513/classManagement/refs/heads/main/PWA/ss/Layer6.png",
       "sizes": "1080x1920",
       "type": "image/png",
       "form_factor": "narrow",
       "label": "Admin Login"
     },
     {
-      "src": "/ss/Layer 5.png",
+      "src": "https://raw.githubusercontent.com/pravinga513/classManagement/refs/heads/main/PWA/ss/Layer5.png",
       "sizes": "1080x1920",
       "type": "image/png",
       "form_factor": "narrow",
       "label": "Add Timetable"
     },
     {
-      "src": "/ss/Layer 4.png",
+      "src": "https://raw.githubusercontent.com/pravinga513/classManagement/refs/heads/main/PWA/ss/Layer4.png",
       "sizes": "1280x720",
       "type": "image/png",
       "form_factor": "wide",
