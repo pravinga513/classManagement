@@ -5,6 +5,30 @@
   "categories": [
     "Education"
   ],
+  "screenshots": [
+    {
+      "src": "/ss/Layer 3.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Admin Login"
+    },
+    {
+      "src": "/ss/Layer 2.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Add Timetable"
+    },
+    {
+      "src": "/ss/Layer 1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Manage Timetable"
+    }
+  ],
+  
   "shortcuts": [
   
     {
