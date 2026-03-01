@@ -24,7 +24,7 @@
       "src": "https://raw.githubusercontent.com/pravinga513/classManagement/refs/heads/main/PWA/ss/Layer1.png",
       "sizes": "1280x720",
       "type": "image/png",
-      "form_factor": "wide",
+      "form_factor": "narrow",
       "label": "Manage Timetable"
     }
   ],
